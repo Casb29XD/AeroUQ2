@@ -47,44 +47,43 @@
 
                 <Separator style="-fx-background-color: #43a047;" />
 
-                <!-- ✅ ID corregido -->
-                <Button fx:id="btnVuelosCollapsed" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                <Button fx:id="btnVuelosCollapsed" onAction="#loadVuelosView" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
                     <graphic><Label text="✈️" style="-fx-text-fill: white; -fx-font-size: 18px;" /></graphic>
                 </Button>
 
-                <Button fx:id="btnPasajerosCollapsed" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                <Button fx:id="btnPasajerosCollapsed" onAction="#loadPasajerosView" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
                     <graphic><Label text="👤" style="-fx-text-fill: white; -fx-font-size: 18px;" /></graphic>
                 </Button>
 
-                <Button fx:id="btnPuertasEmbarqueCollapsed" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                <Button fx:id="btnPuertasEmbarqueCollapsed" onAction="#loadEmbarqueView" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
                     <graphic><Label text="🏢" style="-fx-text-fill: white; -fx-font-size: 18px;" /></graphic>
                 </Button>
 
-                <Button fx:id="btnEquipajeCollapsed" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                <Button fx:id="btnEquipajeCollapsed" onAction="#loadEquipajeView" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
                     <graphic><Label text="🎒" style="-fx-text-fill: white; -fx-font-size: 18px;" /></graphic>
                 </Button>
 
-                <Button fx:id="btnUsuariosCollapsed" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                <Button fx:id="btnUsuariosCollapsed" onAction="#loadUsuariosView" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
                     <graphic><Label text="🔐" style="-fx-text-fill: white; -fx-font-size: 18px;" /></graphic>
                 </Button>
 
-                <Button fx:id="btnCargaLogisticaCollapsed" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                <Button fx:id="btnCargaLogisticaCollapsed" onAction="#loadCargaView" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
                     <graphic><Label text="📦" style="-fx-text-fill: white; -fx-font-size: 18px;" /></graphic>
                 </Button>
 
-                <Button fx:id="btnEmpleadosCollapsed" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                <Button fx:id="btnEmpleadosCollapsed" onAction="#loadEmpleadosView" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
                     <graphic><Label text="🛠️" style="-fx-text-fill: white; -fx-font-size: 18px;" /></graphic>
                 </Button>
 
-                <Button fx:id="btnAerolineasCollapsed" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                <Button fx:id="btnAerolineasCollapsed" onAction="#loadAerolineaView" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
                     <graphic><Label text="🏨" style="-fx-text-fill: white; -fx-font-size: 18px;" /></graphic>
                 </Button>
 
-                <Button fx:id="btnMantenimientoCollapsed" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                <Button fx:id="btnMantenimientoCollapsed" onAction="#loadMantenimientoView" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
                     <graphic><Label text="🔧" style="-fx-text-fill: white; -fx-font-size: 18px;" /></graphic>
                 </Button>
 
-                <Button fx:id="btnCargoCollapsed" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                <Button fx:id="btnCargoCollapsed" onAction="#loadCargoView" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
                     <graphic><Label text="🧾" style="-fx-text-fill: white; -fx-font-size: 18px;" /></graphic>
                 </Button>
 
@@ -106,7 +105,7 @@
 
                 <Separator style="-fx-background-color: #43a047;" />
 
-                <Button fx:id="btnVuelos" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: CENTER_LEFT; -fx-font-size: 14px;">
+                <Button fx:id="btnVuelos" onAction="#loadVuelosView" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: CENTER_LEFT; -fx-font-size: 14px;">
                     <graphic>
                         <HBox alignment="CENTER_LEFT" spacing="15">
                             <Label text="✈️" style="-fx-text-fill: white; -fx-font-size: 18px;" />
@@ -115,9 +114,7 @@
                     </graphic>
                 </Button>
 
-                <!-- (Agregar aquí los demás botones del menú expandido igual que btnVuelos si deseas que aparezcan todos con texto y ícono) -->
-
-                <Button fx:id="btnCargo" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: CENTER_LEFT; -fx-font-size: 14px;">
+                <Button fx:id="btnCargo" onAction="#loadCargoView" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: CENTER_LEFT; -fx-font-size: 14px;">
                     <graphic>
                         <HBox alignment="CENTER_LEFT" spacing="15">
                             <Label text="🧾" style="-fx-text-fill: white; -fx-font-size: 18px;" />
