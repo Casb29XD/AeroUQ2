@@ -113,6 +113,7 @@ public class CreateTable {
 
             case "Empleados" ->"CREATE TABLE Empleados (\n" +
                     "    ID_Empleado INT PRIMARY KEY IDENTITY(1,1),\n" +
+                    "    DocumentoIdentidad NVARCHAR(50) NOT NULL UNIQUE,\n" +
                     "    Nombre NVARCHAR(100) NOT NULL,\n" +
                     "    Apellido NVARCHAR(100) NOT NULL,\n" +
                     "    idCargo INT NOT NULL,\n" +
