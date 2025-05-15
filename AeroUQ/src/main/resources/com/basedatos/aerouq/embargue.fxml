@@ -11,12 +11,12 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.paint.Color?>
 
-<VBox prefHeight="500.0" prefWidth="800.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #e6f5e9, #d4ebd7);" xmlns="http://javafx.com/javafx/20" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.EmbargueController">
+<VBox prefHeight="500.0" prefWidth="800.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #e6f5e9, #d4ebd7);" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.basedatos.aerouq.controller.EmbargueController">
     <padding>
         <Insets bottom="20" left="20" right="20" top="20" />
     </padding>
-    
-    <!-- Título con efecto de sombra -->
+
+    <!-- Título -->
     <HBox alignment="CENTER" style="-fx-background-color: #2e8b57; -fx-background-radius: 10;">
         <padding>
             <Insets bottom="10" left="15" right="15" top="10" />
@@ -30,105 +30,40 @@
                 </DropShadow>
             </effect>
         </Label>
-        <effect>
-            <DropShadow />
-        </effect>
     </HBox>
-    
-    <!-- Espacio después del título -->
-    <HBox prefHeight="10.0" />
-    
+
     <!-- Barra de búsqueda -->
     <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 10;">
-        <Label text="Buscar puerta de embarque:" style="-fx-font-weight: bold;"/>
-        <TextField fx:id="txtBuscar" promptText="Ingrese ID o número de la puerta" HBox.hgrow="ALWAYS"/>
-        <Button fx:id="btnBuscar" text="🔍 Buscar" onAction="#handleBuscarPuerta" 
-                style="-fx-background-color: #2e8b57; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;">
-            <padding>
-                <Insets bottom="8" left="15" right="15" top="8" />
-            </padding>
-        </Button>
-        <Button fx:id="btnLimpiarBusqueda" text="❌ Limpiar" onAction="#handleLimpiarBusqueda" 
-                style="-fx-background-color: #78a885; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;">
-            <padding>
-                <Insets bottom="8" left="15" right="15" top="8" />
-            </padding>
-        </Button>
-        <effect>
-            <DropShadow>
-                <color>
-                    <Color opacity="0.2" />
-                </color>
-            </DropShadow>
-        </effect>
+        <Label style="-fx-font-weight: bold;" text="Buscar puerta de embarque:" />
+        <TextField fx:id="txtBuscar" promptText="Ingrese ID o número de la puerta" HBox.hgrow="ALWAYS" />
+        <Button fx:id="btnBuscar" onAction="#handleBuscarPuerta" style="-fx-background-color: #2e8b57; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="🔍 Buscar" />
+        <Button fx:id="btnLimpiarBusqueda" onAction="#handleLimpiarBusqueda" style="-fx-background-color: #78a885; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="❌ Limpiar" />
     </HBox>
-    
-    <!-- TableView redimensionable -->
-    <TableView fx:id="tableEmbargue" VBox.vgrow="ALWAYS" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #a3d2a3;">
+
+    <!-- Campos de Número de puerta y Estado -->
+    <HBox alignment="CENTER" spacing="15" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 10;">
+        <Label text="Número de puerta:" />
+        <TextField fx:id="txtNoPuerta" promptText="Ej. A12" />
+        <Label text="Estado:" />
+        <TextField fx:id="txtEstado" promptText="Ej. Activa / Inactiva" />
+    </HBox>
+
+    <!-- Botones de acción -->
+    <HBox alignment="CENTER" spacing="20" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15;">
+        <Button fx:id="btnAdd" onAction="#handleAddPuerta" style="-fx-background-color: #3cb371; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Agregar Puerta ➕" />
+        <Button fx:id="btnEdit" onAction="#handleEditPuerta" style="-fx-background-color: #20b2aa; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Editar Puerta ✏" />
+        <Button fx:id="btnDelete" onAction="#handleDeletePuerta" style="-fx-background-color: #db5a42; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Eliminar Puerta ➖" />
+    </HBox>
+
+    <!-- Tabla -->
+    <TableView fx:id="tableEmbargue" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #a3d2a3;" VBox.vgrow="ALWAYS">
         <columns>
-            <TableColumn fx:id="colIdPuerta" prefWidth="100" style="-fx-alignment: CENTER;" text="ID Puerta" />
+            <TableColumn fx:id="colIdPuerta" prefWidth="100" text="ID Puerta" />
             <TableColumn fx:id="colNoPuerta" prefWidth="150" text="Número de puerta" />
             <TableColumn fx:id="colEstado" prefWidth="150" text="Estado" />
         </columns>
         <columnResizePolicy>
             <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
         </columnResizePolicy>
-        <effect>
-            <DropShadow>
-                <color>
-                    <Color opacity="0.2" />
-                </color>
-            </DropShadow>
-        </effect>
     </TableView>
-    
-    <!-- Panel de botones -->
-    <HBox alignment="CENTER" spacing="20" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15;">
-        <padding>
-            <Insets bottom="10" left="10" right="10" top="10" />
-        </padding>
-        <Button fx:id="btnAdd" alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleAddPuerta" style="-fx-background-color: #3cb371; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Agregar Puerta ➕">
-            <padding>
-                <Insets bottom="10" left="20" right="20" top="10" />
-            </padding>
-            <effect>
-                <DropShadow height="5.0" radius="2.0" width="5.0">
-                    <color>
-                        <Color opacity="0.3" />
-                    </color>
-                </DropShadow>
-            </effect>
-        </Button>
-        <Button fx:id="btnEdit" alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleEditPuerta" style="-fx-background-color: #20b2aa; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Editar Puerta ✏">
-            <padding>
-                <Insets bottom="10" left="20" right="20" top="10" />
-            </padding>
-            <effect>
-                <DropShadow height="5.0" radius="2.0" width="5.0">
-                    <color>
-                        <Color opacity="0.3" />
-                    </color>
-                </DropShadow>
-            </effect>
-        </Button>
-        <Button fx:id="btnDelete" alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleDeletePuerta" style="-fx-background-color: #db5a42; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Eliminar Puerta ➖">
-            <padding>
-                <Insets bottom="10" left="20" right="20" top="10" />
-            </padding>
-            <effect>
-                <DropShadow height="5.0" radius="2.0" width="5.0">
-                    <color>
-                        <Color opacity="0.3" />
-                    </color>
-                </DropShadow>
-            </effect>
-        </Button>
-        <effect>
-            <DropShadow>
-                <color>
-                    <Color opacity="0.2" />
-                </color>
-            </DropShadow>
-        </effect>
-    </HBox>
 </VBox>
