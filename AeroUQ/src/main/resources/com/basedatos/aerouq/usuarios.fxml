@@ -11,17 +11,15 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.paint.Color?>
 
-<VBox prefHeight="500.0" prefWidth="800.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #e6f5e9, #d4ebd7);" xmlns="http://javafx.com/javafx/20" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.UsuarioController">
+<VBox prefHeight="600.0" prefWidth="850.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #e6f5e9, #d4ebd7);" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.UsuarioController">
+
     <padding>
         <Insets bottom="20" left="20" right="20" top="20" />
     </padding>
-    
-    <!-- Título con efecto de sombra -->
+
+    <!-- Título principal -->
     <HBox alignment="CENTER" style="-fx-background-color: #2e8b57; -fx-background-radius: 10;">
-        <padding>
-            <Insets bottom="10" left="15" right="15" top="10" />
-        </padding>
-        <Label style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;" text="🔐 Gestión de Usuarios">
+        <Label style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;" text="🔐 Gestión de Usuarios">
             <effect>
                 <DropShadow>
                     <color>
@@ -30,108 +28,74 @@
                 </DropShadow>
             </effect>
         </Label>
-        <effect>
-            <DropShadow />
-        </effect>
     </HBox>
-    
-    <!-- Espacio después del título -->
-    <HBox prefHeight="10.0" />
-    
+
     <!-- Barra de búsqueda -->
     <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 10;">
-        <Label text="Buscar usuario:" style="-fx-font-weight: bold;"/>
-        <TextField fx:id="txtBuscar" promptText="Ingrese ID o nombre del usuario" HBox.hgrow="ALWAYS"/>
-        <Button fx:id="btnBuscar" text="🔍 Buscar" onAction="#handleBuscarUsuario" 
-                style="-fx-background-color: #2e8b57; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;">
-            <padding>
-                <Insets bottom="8" left="15" right="15" top="8" />
-            </padding>
-        </Button>
-        <Button fx:id="btnLimpiarBusqueda" text="❌ Limpiar" onAction="#handleLimpiarBusqueda" 
-                style="-fx-background-color: #78a885; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;">
-            <padding>
-                <Insets bottom="8" left="15" right="15" top="8" />
-            </padding>
-        </Button>
-        <effect>
-            <DropShadow>
-                <color>
-                    <Color opacity="0.2" />
-                </color>
-            </DropShadow>
-        </effect>
+        <Label style="-fx-font-weight: bold;" text="Buscar usuario:" />
+        <TextField fx:id="txtBuscar" promptText="Ingrese ID o nombre" HBox.hgrow="ALWAYS" />
+        <Button fx:id="btnBuscar" onAction="#handleBuscarUsuario" style="-fx-background-color: #2e8b57; -fx-text-fill: white; -fx-font-weight: bold;" text="🔍 Buscar" />
+        <Button fx:id="btnLimpiarBusqueda" onAction="#handleLimpiarBusqueda" style="-fx-background-color: #78a885; -fx-text-fill: white; -fx-font-weight: bold;" text="❌ Limpiar" />
     </HBox>
-    
-    <!-- TableView redimensionable -->
-    <TableView fx:id="tableUsuarios" VBox.vgrow="ALWAYS" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #a3d2a3;">
+
+    <!-- Formulario de ingreso -->
+    <VBox spacing="10" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20;">
+        <HBox spacing="15">
+            <VBox spacing="8" HBox.hgrow="ALWAYS">
+                <Label text="ID Usuario:" />
+                <TextField fx:id="txtIdUsuario" promptText="Ingrese ID" />
+            </VBox>
+            <VBox spacing="8" HBox.hgrow="ALWAYS">
+                <Label text="Nombre:" />
+                <TextField fx:id="txtNombre" promptText="Ingrese nombre" />
+            </VBox>
+            <VBox spacing="8" HBox.hgrow="ALWAYS">
+                <Label text="Apellido:" />
+                <TextField fx:id="txtApellido" promptText="Ingrese apellido" />
+            </VBox>
+        </HBox>
+        <HBox spacing="15">
+            <VBox spacing="8" HBox.hgrow="ALWAYS">
+                <Label text="Rol:" />
+                <TextField fx:id="txtRol" promptText="Ingrese rol" />
+            </VBox>
+            <VBox spacing="8" HBox.hgrow="ALWAYS">
+                <Label text="Contraseña:" />
+                <TextField fx:id="txtContraseña" promptText="Ingrese contraseña" />
+            </VBox>
+        </HBox>
+    </VBox>
+
+    <!-- Tabla de usuarios -->
+    <TableView fx:id="tableUsuarios" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #a3d2a3;" VBox.vgrow="ALWAYS">
         <columns>
             <TableColumn fx:id="colIdUsuario" prefWidth="100" style="-fx-alignment: CENTER;" text="ID Usuario" />
             <TableColumn fx:id="colNombre" prefWidth="150" text="Nombre" />
             <TableColumn fx:id="colApellido" prefWidth="150" text="Apellido" />
             <TableColumn fx:id="colRol" prefWidth="150" text="Rol" />
             <TableColumn fx:id="colContraseña" prefWidth="150" text="Contraseña" />
-
         </columns>
         <columnResizePolicy>
             <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
         </columnResizePolicy>
-        <effect>
-            <DropShadow>
-                <color>
-                    <Color opacity="0.2" />
-                </color>
-            </DropShadow>
-        </effect>
     </TableView>
-    
-    <!-- Panel de botones -->
+
+    <!-- Botones de acción -->
     <HBox alignment="CENTER" spacing="20" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15;">
-        <padding>
-            <Insets bottom="10" left="10" right="10" top="10" />
-        </padding>
-        <Button fx:id="btnAdd" alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleAddUsuario" style="-fx-background-color: #3cb371; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Agregar Usuario ➕">
+        <Button fx:id="btnAdd" onAction="#handleAddUsuario" style="-fx-background-color: #3cb371; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Agregar Usuario ➕">
             <padding>
                 <Insets bottom="10" left="20" right="20" top="10" />
             </padding>
-            <effect>
-                <DropShadow height="5.0" radius="2.0" width="5.0">
-                    <color>
-                        <Color opacity="0.3" />
-                    </color>
-                </DropShadow>
-            </effect>
         </Button>
-        <Button fx:id="btnEdit" alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleEditUsuario" style="-fx-background-color: #20b2aa; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Editar Usuario ✏">
+        <Button fx:id="btnEdit" onAction="#handleEditUsuario" style="-fx-background-color: #20b2aa; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Editar Usuario ✏">
             <padding>
                 <Insets bottom="10" left="20" right="20" top="10" />
             </padding>
-            <effect>
-                <DropShadow height="5.0" radius="2.0" width="5.0">
-                    <color>
-                        <Color opacity="0.3" />
-                    </color>
-                </DropShadow>
-            </effect>
         </Button>
-        <Button fx:id="btnDelete" alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleDeleteUsuario" style="-fx-background-color: #db5a42; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Eliminar Usuario ➖">
+        <Button fx:id="btnDelete" onAction="#handleDeleteUsuario" style="-fx-background-color: #db5a42; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Eliminar Usuario ➖">
             <padding>
                 <Insets bottom="10" left="20" right="20" top="10" />
             </padding>
-            <effect>
-                <DropShadow height="5.0" radius="2.0" width="5.0">
-                    <color>
-                        <Color opacity="0.3" />
-                    </color>
-                </DropShadow>
-            </effect>
         </Button>
-        <effect>
-            <DropShadow>
-                <color>
-                    <Color opacity="0.2" />
-                </color>
-            </DropShadow>
-        </effect>
     </HBox>
 </VBox>
