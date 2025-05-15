@@ -42,10 +42,6 @@
     <VBox spacing="10" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20;">
         <HBox spacing="15">
             <VBox spacing="8" HBox.hgrow="ALWAYS">
-                <Label text="ID Usuario:" />
-                <TextField fx:id="txtIdUsuario" promptText="Ingrese ID" />
-            </VBox>
-            <VBox spacing="8" HBox.hgrow="ALWAYS">
                 <Label text="Nombre:" />
                 <TextField fx:id="txtNombre" promptText="Ingrese nombre" />
             </VBox>
