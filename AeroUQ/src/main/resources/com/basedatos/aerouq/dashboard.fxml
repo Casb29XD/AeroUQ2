@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.Color?>
+
+<BorderPane style="-fx-background-color: linear-gradient(to bottom, #e6f5e6, #d6ebd6);" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.basedatos.aerouq.controller.DashboardController">
+
+    <!-- Header -->
+    <top>
+        <VBox>
+            <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-background-color: #2e7d32;">
+                <padding><Insets bottom="15" left="20" right="20" top="15" /></padding>
+                <Label style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;" text="AerUQ" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label fx:id="lblCurrentDateTime" style="-fx-text-fill: white;" text="2025-04-19 03:57:56" />
+                <Label style="-fx-text-fill: white;" text="|" />
+                <Label fx:id="lblUsername" style="-fx-text-fill: white;" text="Luisosky" />
+                <effect>
+                    <DropShadow />
+                </effect>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- Menú lateral -->
+    <left>
+        <StackPane>
+            <!-- Menú colapsado -->
+            <VBox fx:id="menuBoxCollapsed" alignment="TOP_CENTER" prefWidth="60" spacing="15" style="-fx-background-color: #1b5e20;">
+                <padding><Insets bottom="15" left="10" right="10" top="15" /></padding>
+
+                <Button fx:id="btnLockMenu" onAction="#toggleMenuLock" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                    <graphic>
+                        <Label style="-fx-text-fill: white; -fx-font-size: 18px;" text="🔓" />
+                    </graphic>
+                </Button>
+
+                <Separator style="-fx-background-color: #43a047;" />
+
+                <!-- ✅ ID corregido -->
+                <Button fx:id="btnVuelosCollapsed" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                    <graphic><Label text="✈️" style="-fx-text-fill: white; -fx-font-size: 18px;" /></graphic>
+                </Button>
+
+                <Button fx:id="btnPasajerosCollapsed" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                    <graphic><Label text="👤" style="-fx-text-fill: white; -fx-font-size: 18px;" /></graphic>
+                </Button>
+
+                <Button fx:id="btnPuertasEmbarqueCollapsed" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                    <graphic><Label text="🏢" style="-fx-text-fill: white; -fx-font-size: 18px;" /></graphic>
+                </Button>
+
+                <Button fx:id="btnEquipajeCollapsed" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                    <graphic><Label text="🎒" style="-fx-text-fill: white; -fx-font-size: 18px;" /></graphic>
+                </Button>
+
+                <Button fx:id="btnUsuariosCollapsed" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                    <graphic><Label text="🔐" style="-fx-text-fill: white; -fx-font-size: 18px;" /></graphic>
+                </Button>
+
+                <Button fx:id="btnCargaLogisticaCollapsed" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                    <graphic><Label text="📦" style="-fx-text-fill: white; -fx-font-size: 18px;" /></graphic>
+                </Button>
+
+                <Button fx:id="btnEmpleadosCollapsed" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                    <graphic><Label text="🛠️" style="-fx-text-fill: white; -fx-font-size: 18px;" /></graphic>
+                </Button>
+
+                <Button fx:id="btnAerolineasCollapsed" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                    <graphic><Label text="🏨" style="-fx-text-fill: white; -fx-font-size: 18px;" /></graphic>
+                </Button>
+
+                <Button fx:id="btnMantenimientoCollapsed" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                    <graphic><Label text="🔧" style="-fx-text-fill: white; -fx-font-size: 18px;" /></graphic>
+                </Button>
+
+                <Button fx:id="btnCargoCollapsed" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                    <graphic><Label text="🧾" style="-fx-text-fill: white; -fx-font-size: 18px;" /></graphic>
+                </Button>
+
+                <effect>
+                    <DropShadow><color><Color opacity="0.5" /></color></DropShadow>
+                </effect>
+            </VBox>
+
+            <!-- Menú expandido -->
+            <VBox fx:id="menuBoxExpanded" alignment="TOP_LEFT" prefWidth="220" spacing="15" style="-fx-background-color: #1b5e20;" visible="false">
+                <padding><Insets bottom="15" left="20" right="20" top="15" /></padding>
+
+                <HBox alignment="CENTER_LEFT" spacing="15">
+                    <Button fx:id="btnLockMenuExpanded" onAction="#toggleMenuLock" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                        <graphic><Label text="🔓" style="-fx-text-fill: white; -fx-font-size: 18px;" /></graphic>
+                    </Button>
+                    <Label style="-fx-text-fill: white; -fx-font-size: 14px;" text="Fijar Menú" />
+                </HBox>
+
+                <Separator style="-fx-background-color: #43a047;" />
+
+                <Button fx:id="btnVuelos" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: CENTER_LEFT; -fx-font-size: 14px;">
+                    <graphic>
+                        <HBox alignment="CENTER_LEFT" spacing="15">
+                            <Label text="✈️" style="-fx-text-fill: white; -fx-font-size: 18px;" />
+                            <Label text="Vuelos" style="-fx-text-fill: white;" />
+                        </HBox>
+                    </graphic>
+                </Button>
+
+                <!-- (Agregar aquí los demás botones del menú expandido igual que btnVuelos si deseas que aparezcan todos con texto y ícono) -->
+
+                <Button fx:id="btnCargo" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: CENTER_LEFT; -fx-font-size: 14px;">
+                    <graphic>
+                        <HBox alignment="CENTER_LEFT" spacing="15">
+                            <Label text="🧾" style="-fx-text-fill: white; -fx-font-size: 18px;" />
+                            <Label text="Cargo" style="-fx-text-fill: white;" />
+                        </HBox>
+                    </graphic>
+                </Button>
+
+                <effect>
+                    <DropShadow><color><Color opacity="0.5" /></color></DropShadow>
+                </effect>
+            </VBox>
+        </StackPane>
+    </left>
+
+    <!-- Panel central -->
+    <center>
+        <AnchorPane fx:id="contentArea" style="-fx-background-color: transparent;">
+            <padding><Insets bottom="20" left="20" right="20" top="20" /></padding>
+        </AnchorPane>
+    </center>
+</BorderPane>
