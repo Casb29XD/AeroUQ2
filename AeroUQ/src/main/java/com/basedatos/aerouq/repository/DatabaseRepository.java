@@ -8,7 +8,6 @@ import java.util.*;
 
 public class DatabaseRepository {
     private final CreateTable createTable;
-    private  final DatabaseRepository repo = new DatabaseRepository();
 
     public DatabaseRepository() {
         this.createTable = new CreateTable();
@@ -20,7 +19,7 @@ public class DatabaseRepository {
         }
     }
 
-    public void insertar(String tabla, Map<String, Object> datos) throws SQLException {
+    public int insertar(String tabla, Map<String, Object> datos) throws SQLException {
         validarNombreTabla(tabla);
 
         if (datos.isEmpty()) {
@@ -53,8 +52,9 @@ public class DatabaseRepository {
                 stmt.setObject(index++, valor);
             }
 
-            stmt.executeUpdate();
+            int filasInsertadas = stmt.executeUpdate();
             System.out.println("Datos insertados correctamente en la tabla " + tabla);
+            return filasInsertadas;
         } catch (SQLException e) {
             System.err.println("Error al insertar en la tabla " + tabla + ": " + e.getMessage());
             throw e;
@@ -80,7 +80,6 @@ public class DatabaseRepository {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             int index = 1;
-
             for (Object valor : datos.values()) {
                 stmt.setObject(index++, valor);
             }
