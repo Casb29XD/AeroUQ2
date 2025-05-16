@@ -2,7 +2,6 @@ package com.basedatos.aerouq.controller;
 
 import com.basedatos.aerouq.model.Vuelo;
 import com.basedatos.aerouq.repository.DatabaseRepository;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -12,6 +11,7 @@ import javafx.scene.control.*;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 
 public class VuelosController {
@@ -20,8 +20,10 @@ public class VuelosController {
     @FXML private TextField txtIdAerolinea;
     @FXML private TextField txtOrigen;
     @FXML private TextField txtDestino;
-    @FXML private TextField txtFechaHoraSalida;
-    @FXML private TextField txtFechaHoraLlegada;
+    @FXML private DatePicker datePickerSalida;
+    @FXML private TextField txtHoraSalida;
+    @FXML private DatePicker datePickerLlegada;
+    @FXML private TextField txtHoraLlegada;
     @FXML private TextField txtEstadoVuelo;
     @FXML private TextField txtIdPuerta;
     @FXML private TextField txtBuscar;
@@ -46,7 +48,6 @@ public class VuelosController {
     private ObservableList<Vuelo> data = FXCollections.observableArrayList();
 
     private Vuelo vueloSeleccionado = null;
-
     private final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @FXML
@@ -56,8 +57,16 @@ public class VuelosController {
         colIdAerolinea.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getIdAerolinea())));
         colOrigen.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getOrigen()));
         colDestino.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDestino()));
-        colFechaHoraSalida.setCellValueFactory(cellData -> new SimpleStringProperty(dateTimeFormat.format(cellData.getValue().getFechaHoraSalida())));
-        colFechaHoraLlegada.setCellValueFactory(cellData -> new SimpleStringProperty(dateTimeFormat.format(cellData.getValue().getFechaHoraLlegada())));
+
+        colFechaHoraSalida.setCellValueFactory(cellData -> {
+            Date fecha = cellData.getValue().getFechaHoraSalida();
+            return new SimpleStringProperty(fecha != null ? dateTimeFormat.format(fecha) : "");
+        });
+        colFechaHoraLlegada.setCellValueFactory(cellData -> {
+            Date fecha = cellData.getValue().getFechaHoraLlegada();
+            return new SimpleStringProperty(fecha != null ? dateTimeFormat.format(fecha) : "");
+        });
+
         colEstadoVuelo.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEstadoVuelo()));
         colIdPuerta.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getIdPuerta())));
 
@@ -143,8 +152,10 @@ public class VuelosController {
         txtIdAerolinea.clear();
         txtOrigen.clear();
         txtDestino.clear();
-        txtFechaHoraSalida.clear();
-        txtFechaHoraLlegada.clear();
+        datePickerSalida.setValue(null);
+        txtHoraSalida.clear();
+        datePickerLlegada.setValue(null);
+        txtHoraLlegada.clear();
         txtEstadoVuelo.clear();
         txtIdPuerta.clear();
     }
@@ -155,8 +166,28 @@ public class VuelosController {
             txtIdAerolinea.setText(String.valueOf(vueloSeleccionado.getIdAerolinea()));
             txtOrigen.setText(vueloSeleccionado.getOrigen());
             txtDestino.setText(vueloSeleccionado.getDestino());
-            txtFechaHoraSalida.setText(dateTimeFormat.format(vueloSeleccionado.getFechaHoraSalida()));
-            txtFechaHoraLlegada.setText(dateTimeFormat.format(vueloSeleccionado.getFechaHoraLlegada()));
+
+            // Salida
+            if (vueloSeleccionado.getFechaHoraSalida() != null) {
+                Date fecha = vueloSeleccionado.getFechaHoraSalida();
+                LocalDate localDate = new java.sql.Date(fecha.getTime()).toLocalDate();
+                datePickerSalida.setValue(localDate);
+                txtHoraSalida.setText(new SimpleDateFormat("HH:mm").format(fecha));
+            } else {
+                datePickerSalida.setValue(null);
+                txtHoraSalida.clear();
+            }
+            // Llegada
+            if (vueloSeleccionado.getFechaHoraLlegada() != null) {
+                Date fecha = vueloSeleccionado.getFechaHoraLlegada();
+                LocalDate localDate = new java.sql.Date(fecha.getTime()).toLocalDate();
+                datePickerLlegada.setValue(localDate);
+                txtHoraLlegada.setText(new SimpleDateFormat("HH:mm").format(fecha));
+            } else {
+                datePickerLlegada.setValue(null);
+                txtHoraLlegada.clear();
+            }
+
             txtEstadoVuelo.setText(vueloSeleccionado.getEstadoVuelo());
             txtIdPuerta.setText(String.valueOf(vueloSeleccionado.getIdPuerta()));
         }
@@ -169,8 +200,10 @@ public class VuelosController {
             int idAerolinea = Integer.parseInt(txtIdAerolinea.getText().trim());
             String origen = txtOrigen.getText().trim();
             String destino = txtDestino.getText().trim();
-            Date fechaHoraSalida = dateTimeFormat.parse(txtFechaHoraSalida.getText().trim());
-            Date fechaHoraLlegada = dateTimeFormat.parse(txtFechaHoraLlegada.getText().trim());
+
+            Date fechaHoraSalida = getFechaHora(datePickerSalida, txtHoraSalida);
+            Date fechaHoraLlegada = getFechaHora(datePickerLlegada, txtHoraLlegada);
+
             String estadoVuelo = txtEstadoVuelo.getText().trim();
             int idPuerta = Integer.parseInt(txtIdPuerta.getText().trim());
 
@@ -179,8 +212,8 @@ public class VuelosController {
             datos.put("ID_Aerolinea", idAerolinea);
             datos.put("Origen", origen);
             datos.put("Destino", destino);
-            datos.put("FechaHoraSalida", new java.sql.Timestamp(fechaHoraSalida.getTime()));
-            datos.put("FechaHoraLlegada", new java.sql.Timestamp(fechaHoraLlegada.getTime()));
+            datos.put("FechaHoraSalida", fechaHoraSalida != null ? new java.sql.Timestamp(fechaHoraSalida.getTime()) : null);
+            datos.put("FechaHoraLlegada", fechaHoraLlegada != null ? new java.sql.Timestamp(fechaHoraLlegada.getTime()) : null);
             datos.put("EstadoVuelo", estadoVuelo);
             datos.put("ID_Puerta", idPuerta);
 
@@ -194,7 +227,7 @@ public class VuelosController {
         } catch (NumberFormatException e) {
             mostrarAlerta("Advertencia", "Los campos numéricos deben tener valores válidos.", Alert.AlertType.WARNING);
         } catch (ParseException e) {
-            mostrarAlerta("Advertencia", "El formato de fecha y hora debe ser yyyy-MM-dd HH:mm:ss.", Alert.AlertType.WARNING);
+            mostrarAlerta("Advertencia", "El formato de hora debe ser HH:mm y se debe seleccionar una fecha.", Alert.AlertType.WARNING);
         } catch (SQLException e) {
             mostrarAlerta("Error", "Error al agregar vuelo:\n" + e.getMessage(), Alert.AlertType.ERROR);
         }
@@ -211,8 +244,10 @@ public class VuelosController {
             int idAerolinea = Integer.parseInt(txtIdAerolinea.getText().trim());
             String origen = txtOrigen.getText().trim();
             String destino = txtDestino.getText().trim();
-            Date fechaHoraSalida = dateTimeFormat.parse(txtFechaHoraSalida.getText().trim());
-            Date fechaHoraLlegada = dateTimeFormat.parse(txtFechaHoraLlegada.getText().trim());
+
+            Date fechaHoraSalida = getFechaHora(datePickerSalida, txtHoraSalida);
+            Date fechaHoraLlegada = getFechaHora(datePickerLlegada, txtHoraLlegada);
+
             String estadoVuelo = txtEstadoVuelo.getText().trim();
             int idPuerta = Integer.parseInt(txtIdPuerta.getText().trim());
 
@@ -221,8 +256,8 @@ public class VuelosController {
             datos.put("ID_Aerolinea", idAerolinea);
             datos.put("Origen", origen);
             datos.put("Destino", destino);
-            datos.put("FechaHoraSalida", new java.sql.Timestamp(fechaHoraSalida.getTime()));
-            datos.put("FechaHoraLlegada", new java.sql.Timestamp(fechaHoraLlegada.getTime()));
+            datos.put("FechaHoraSalida", fechaHoraSalida != null ? new java.sql.Timestamp(fechaHoraSalida.getTime()) : null);
+            datos.put("FechaHoraLlegada", fechaHoraLlegada != null ? new java.sql.Timestamp(fechaHoraLlegada.getTime()) : null);
             datos.put("EstadoVuelo", estadoVuelo);
             datos.put("ID_Puerta", idPuerta);
 
@@ -241,7 +276,7 @@ public class VuelosController {
         } catch (NumberFormatException e) {
             mostrarAlerta("Advertencia", "Los campos numéricos deben tener valores válidos.", Alert.AlertType.WARNING);
         } catch (ParseException e) {
-            mostrarAlerta("Advertencia", "El formato de fecha y hora debe ser yyyy-MM-dd HH:mm:ss.", Alert.AlertType.WARNING);
+            mostrarAlerta("Advertencia", "El formato de hora debe ser HH:mm y se debe seleccionar una fecha.", Alert.AlertType.WARNING);
         } catch (SQLException e) {
             mostrarAlerta("Error", "Error al actualizar vuelo:\n" + e.getMessage(), Alert.AlertType.ERROR);
         }
@@ -275,6 +310,14 @@ public class VuelosController {
             if (v.getIdVuelo() == idVuelo) return v;
         }
         return null;
+    }
+
+    private Date getFechaHora(DatePicker datePicker, TextField txtHora) throws ParseException {
+        LocalDate fecha = datePicker.getValue();
+        String hora = txtHora.getText().trim();
+        if (fecha == null || hora.isEmpty()) return null;
+        String fechaHoraStr = fecha + " " + (hora.length() == 5 ? hora : "00:00") + ":00";
+        return dateTimeFormat.parse(fechaHoraStr);
     }
 
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {

@@ -66,8 +66,8 @@
 
     <!-- Formulario para ingreso de datos -->
     <GridPane alignment="CENTER" hgap="15" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15;" vgap="15">
-        <Label style="-fx-font-weight: bold;" text="Documento:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-        <TextField fx:id="txtDocumento" promptText="Documento" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+        <Label style="-fx-font-weight: bold;" text="Documento Identidad:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+        <TextField fx:id="txtDocumento" promptText="Documento Identidad" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
         <Label style="-fx-font-weight: bold;" text="Nombre:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
         <TextField fx:id="txtNombre" promptText="Nombre" GridPane.columnIndex="3" GridPane.rowIndex="0" />
@@ -75,40 +75,20 @@
         <Label style="-fx-font-weight: bold;" text="Apellido:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
         <TextField fx:id="txtApellido" promptText="Apellido" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-        <Label style="-fx-font-weight: bold;" text="Cargo:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-        <TextField fx:id="txtCargo" promptText="Cargo" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-      <columnConstraints>
-         <ColumnConstraints />
-         <ColumnConstraints />
-         <ColumnConstraints />
-         <ColumnConstraints />
-      </columnConstraints>
-      <rowConstraints>
-         <RowConstraints />
-         <RowConstraints />
-      </rowConstraints>
-    </GridPane>
+        <Label style="-fx-font-weight: bold;" text="ID Cargo:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+        <TextField fx:id="txtIdCargo" promptText="Ej. 1" GridPane.columnIndex="3" GridPane.rowIndex="1" />
 
-    <!-- TableView redimensionable -->
-    <TableView fx:id="tableEmpleado" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #a3d2a3;" VBox.vgrow="ALWAYS">
-        <columns>
-            <TableColumn fx:id="colIdEmpleado" prefWidth="100" style="-fx-alignment: CENTER;" text="ID Empleado" />
-            <TableColumn prefWidth="75.0" text="Documento" />
-            <TableColumn fx:id="colNombre" prefWidth="150" text="Nombre Empleado" />
-            <TableColumn fx:id="colApellido" prefWidth="150" text="Apellido Empleado" />
-            <TableColumn fx:id="colCargo" prefWidth="150" text="Cargo Empleado" />
-        </columns>
-        <columnResizePolicy>
-            <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
-        </columnResizePolicy>
-        <effect>
-            <DropShadow>
-                <color>
-                    <Color opacity="0.2" />
-                </color>
-            </DropShadow>
-        </effect>
-    </TableView>
+        <columnConstraints>
+            <ColumnConstraints />
+            <ColumnConstraints />
+            <ColumnConstraints />
+            <ColumnConstraints />
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints />
+            <RowConstraints />
+        </rowConstraints>
+    </GridPane>
 
     <!-- Panel de botones -->
     <HBox alignment="CENTER" spacing="20" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15;">
@@ -159,4 +139,25 @@
             </DropShadow>
         </effect>
     </HBox>
+
+    <!-- TableView redimensionable -->
+    <TableView fx:id="tableEmpleado" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #a3d2a3;" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colIdEmpleado" prefWidth="100" style="-fx-alignment: CENTER;" text="ID Empleado" />
+            <TableColumn fx:id="colDocumento" prefWidth="120.0" text="Documento Identidad" />
+            <TableColumn fx:id="colNombre" prefWidth="150" text="Nombre Empleado" />
+            <TableColumn fx:id="colApellido" prefWidth="150" text="Apellido Empleado" />
+            <TableColumn fx:id="colCargo" prefWidth="150" text="ID Cargo" />
+        </columns>
+        <columnResizePolicy>
+            <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
+        </columnResizePolicy>
+        <effect>
+            <DropShadow>
+                <color>
+                    <Color opacity="0.2" />
+                </color>
+            </DropShadow>
+        </effect>
+    </TableView>
 </VBox>

@@ -81,27 +81,6 @@
         </VBox>
     </HBox>
 
-    <!-- TableView redimensionable -->
-    <TableView fx:id="tableMantenimiento" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #a3d2a3;" VBox.vgrow="ALWAYS">
-        <columns>
-            <TableColumn fx:id="colIdMantenimiento" prefWidth="100" style="-fx-alignment: CENTER;" text="ID Mantenimiento" />
-            <TableColumn fx:id="colIdAeronave" prefWidth="150" text="ID Aeronave" />
-            <TableColumn fx:id="colDesc" prefWidth="150" text="Descripción" />
-            <TableColumn fx:id="colFechaMantenimiento" prefWidth="150" text="Fecha de Mantenimiento" />
-            <TableColumn fx:id="colEstado" prefWidth="150" text="Estado" />
-        </columns>
-        <columnResizePolicy>
-            <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
-        </columnResizePolicy>
-        <effect>
-            <DropShadow>
-                <color>
-                    <Color opacity="0.2" />
-                </color>
-            </DropShadow>
-        </effect>
-    </TableView>
-
     <!-- Panel de botones -->
     <HBox alignment="CENTER" spacing="20" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15;">
         <padding>
@@ -151,4 +130,25 @@
             </DropShadow>
         </effect>
     </HBox>
+
+    <!-- TableView redimensionable -->
+    <TableView fx:id="tableMantenimiento" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #a3d2a3;" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colIdMantenimiento" prefWidth="100" style="-fx-alignment: CENTER;" text="ID Mantenimiento" />
+            <TableColumn fx:id="colIdAeronave" prefWidth="150" text="ID Aeronave" />
+            <TableColumn fx:id="colDesc" prefWidth="150" text="Descripción" />
+            <TableColumn fx:id="colFechaMantenimiento" prefWidth="150" text="Fecha de Mantenimiento" />
+            <TableColumn fx:id="colEstado" prefWidth="150" text="Estado" />
+        </columns>
+        <columnResizePolicy>
+            <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
+        </columnResizePolicy>
+        <effect>
+            <DropShadow>
+                <color>
+                    <Color opacity="0.2" />
+                </color>
+            </DropShadow>
+        </effect>
+    </TableView>
 </VBox>

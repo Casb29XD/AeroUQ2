@@ -60,17 +60,23 @@
         <Label text="Destino:" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
         <TextField fx:id="txtDestino" promptText="Ej: Medellín" GridPane.rowIndex="1" GridPane.columnIndex="3"/>
 
-        <Label text="Fecha/Hora Salida:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-        <TextField fx:id="txtFechaHoraSalida" promptText="YYYY-MM-DD HH:MM" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+        <!-- Fecha y hora de salida -->
+        <Label text="Fecha Salida:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <DatePicker fx:id="datePickerSalida" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+        <Label text="Hora Salida:" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+        <TextField fx:id="txtHoraSalida" promptText="HH:mm" GridPane.rowIndex="2" GridPane.columnIndex="3"/>
 
-        <Label text="Fecha/Hora Llegada:" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
-        <TextField fx:id="txtFechaHoraLlegada" promptText="YYYY-MM-DD HH:MM" GridPane.rowIndex="2" GridPane.columnIndex="3"/>
+        <!-- Fecha y hora de llegada -->
+        <Label text="Fecha Llegada:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <DatePicker fx:id="datePickerLlegada" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+        <Label text="Hora Llegada:" GridPane.rowIndex="3" GridPane.columnIndex="2"/>
+        <TextField fx:id="txtHoraLlegada" promptText="HH:mm" GridPane.rowIndex="3" GridPane.columnIndex="3"/>
 
-        <Label text="Estado del Vuelo:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-        <TextField fx:id="txtEstadoVuelo" promptText="Ej: En vuelo, Retrasado" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+        <Label text="Estado del Vuelo:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtEstadoVuelo" promptText="Ej: En vuelo, Retrasado" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
 
-        <Label text="ID Puerta:" GridPane.rowIndex="3" GridPane.columnIndex="2"/>
-        <TextField fx:id="txtIdPuerta" promptText="Ej: 5" GridPane.rowIndex="3" GridPane.columnIndex="3"/>
+        <Label text="ID Puerta:" GridPane.rowIndex="4" GridPane.columnIndex="2"/>
+        <TextField fx:id="txtIdPuerta" promptText="Ej: 5" GridPane.rowIndex="4" GridPane.columnIndex="3"/>
     </GridPane>
 
     <!-- Panel de botones -->

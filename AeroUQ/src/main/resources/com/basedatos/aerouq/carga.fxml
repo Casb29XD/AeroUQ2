@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
@@ -63,7 +64,7 @@
 
     <!-- FORMULARIO DE CAMPOS CON DOS COLUMNAS -->
     <VBox spacing="10" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15;">
-        <!-- Primera fila: ID Carga y ID Aerolínea -->
+        <!-- Primera fila: ID Aerolínea y Peso -->
         <HBox spacing="20">
             <VBox spacing="5" HBox.hgrow="ALWAYS">
                 <Label style="-fx-font-weight: bold;" text="ID Aerolínea:" />
@@ -74,39 +75,18 @@
                 <TextField fx:id="txtPeso" promptText="Peso" />
             </VBox>
         </HBox>
-        <!-- Segunda fila: Peso y Tipo de Carga -->
+        <!-- Segunda fila: Tipo de Carga y Estado (ComboBox) -->
         <HBox spacing="20">
             <VBox spacing="5" HBox.hgrow="ALWAYS">
                 <Label style="-fx-font-weight: bold;" text="Tipo de Carga:" />
-                <TextField fx:id="txtTipoCarga" promptText="Tipo de carga" />
+                <ComboBox fx:id="comboTipoCarga" promptText="Seleccione tipo de carga" />
             </VBox>
             <VBox maxWidth="300" spacing="5" HBox.hgrow="ALWAYS">
                 <Label style="-fx-font-weight: bold;" text="Estado:" />
-                <TextField fx:id="txtEstado" promptText="Estado" />
+                <ComboBox fx:id="comboEstado" promptText="Seleccione estado" />
             </VBox>
         </HBox>
     </VBox>
-
-    <!-- TableView redimensionable -->
-    <TableView fx:id="tableCargas" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #a3d2a3;" VBox.vgrow="ALWAYS">
-        <columns>
-            <TableColumn fx:id="colIdCarga" prefWidth="100" style="-fx-alignment: CENTER;" text="ID Carga" />
-            <TableColumn fx:id="colNIdAerolinea" prefWidth="150" text="ID Aerolínea" />
-            <TableColumn fx:id="colPeso" prefWidth="150" text="Peso" />
-            <TableColumn fx:id="colTipoCarga" prefWidth="150" text="Tipo de Carga" />
-            <TableColumn fx:id="colEstado" prefWidth="150" text="Estado" />
-        </columns>
-        <columnResizePolicy>
-            <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
-        </columnResizePolicy>
-        <effect>
-            <DropShadow>
-                <color>
-                    <Color opacity="0.2" />
-                </color>
-            </DropShadow>
-        </effect>
-    </TableView>
 
     <!-- Panel de botones -->
     <HBox alignment="CENTER" spacing="20" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15;">
@@ -157,4 +137,25 @@
             </DropShadow>
         </effect>
     </HBox>
+
+    <!-- TableView redimensionable -->
+    <TableView fx:id="tableCargas" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #a3d2a3;" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colIdCarga" prefWidth="100" style="-fx-alignment: CENTER;" text="ID Carga" />
+            <TableColumn fx:id="colNIdAerolinea" prefWidth="150" text="ID Aerolínea" />
+            <TableColumn fx:id="colPeso" prefWidth="150" text="Peso" />
+            <TableColumn fx:id="colTipoCarga" prefWidth="150" text="Tipo de Carga" />
+            <TableColumn fx:id="colEstado" prefWidth="150" text="Estado" />
+        </columns>
+        <columnResizePolicy>
+            <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
+        </columnResizePolicy>
+        <effect>
+            <DropShadow>
+                <color>
+                    <Color opacity="0.2" />
+                </color>
+            </DropShadow>
+        </effect>
+    </TableView>
 </VBox>

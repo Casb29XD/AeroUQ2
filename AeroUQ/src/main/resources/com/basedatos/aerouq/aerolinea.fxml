@@ -66,22 +66,18 @@
         <!-- Primera fila: ID Aerolínea y Nombre -->
         <HBox spacing="20">
             <VBox spacing="5" HBox.hgrow="ALWAYS">
-                <Label text="ID Aerolínea:" style="-fx-font-weight: bold;" />
-                <TextField fx:id="txtIdAerolinea" promptText="ID Aerolínea" />
-            </VBox>
-            <VBox spacing="5" HBox.hgrow="ALWAYS">
-                <Label text="Nombre:" style="-fx-font-weight: bold;" />
+                <Label style="-fx-font-weight: bold;" text="Nombre:" />
                 <TextField fx:id="txtNombre" promptText="Nombre de la aerolínea" />
             </VBox>
         </HBox>
         <!-- Segunda fila: Flota y Contacto -->
         <HBox spacing="20">
             <VBox spacing="5" HBox.hgrow="ALWAYS">
-                <Label text="Flota:" style="-fx-font-weight: bold;" />
+                <Label style="-fx-font-weight: bold;" text="Flota:" />
                 <TextField fx:id="txtFlota" promptText="Flota de la aerolínea" />
             </VBox>
             <VBox spacing="5" HBox.hgrow="ALWAYS">
-                <Label text="Contacto:" style="-fx-font-weight: bold;" />
+                <Label style="-fx-font-weight: bold;" text="Contacto:" />
                 <TextField fx:id="txtContacto" promptText="Información de contacto" />
             </VBox>
         </HBox>
@@ -141,8 +137,8 @@
     <TableView fx:id="tableAerolineas" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #a3d2a3;" VBox.vgrow="ALWAYS">
         <columns>
             <TableColumn fx:id="colIdAerolínea" prefWidth="100" style="-fx-alignment: CENTER;" text="ID Aerolínea" />
+            <TableColumn fx:id="colNombre" prefWidth="150" text="Nombre" />
             <TableColumn fx:id="colFlota" prefWidth="150" text="Flota Aerolínea" />
-            <TableColumn fx:id="colIdVuelo" prefWidth="150" text="ID Vuelo" />
             <TableColumn fx:id="colContacto" prefWidth="150" text="Contacto" />
         </columns>
         <columnResizePolicy>

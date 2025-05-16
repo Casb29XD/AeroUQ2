@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
@@ -14,7 +15,9 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.paint.Color?>
 
-<VBox prefHeight="500.0" prefWidth="800.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #e6f5e9, #d4ebd7);" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.basedatos.aerouq.controller.EquipajeController">
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+<VBox prefHeight="500.0" prefWidth="800.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #e6f5e9, #d4ebd7;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.basedatos.aerouq.controller.EquipajeController">
     <padding>
         <Insets bottom="20" left="20" right="20" top="20" />
     </padding>
@@ -79,21 +82,29 @@
         <TextField fx:id="txtIdPasajero" promptText="ID Pasajero" GridPane.columnIndex="3" GridPane.rowIndex="1" />
 
         <Label style="-fx-font-weight: bold;" text="Estado:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-        <TextField fx:id="txtEstado" promptText="Estado" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-      <columnConstraints>
-         <ColumnConstraints />
-         <ColumnConstraints />
-         <ColumnConstraints />
-         <ColumnConstraints />
-      </columnConstraints>
-      <rowConstraints>
-         <RowConstraints />
-         <RowConstraints />
-         <RowConstraints />
-      </rowConstraints>
+        <ComboBox fx:id="comboEstado" promptText="Seleccione estado" GridPane.columnIndex="1" GridPane.rowIndex="2">
+            <items>
+                <FXCollections fx:factory="observableArrayList">
+                    <String fx:value="En tránsito"/>
+                    <String fx:value="Cargada"/>
+                    <String fx:value="Extraviada"/>
+                </FXCollections>
+            </items>
+        </ComboBox>
+        <columnConstraints>
+            <ColumnConstraints />
+            <ColumnConstraints />
+            <ColumnConstraints />
+            <ColumnConstraints />
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+        </rowConstraints>
     </GridPane>
 
-       <!-- Panel de botones -->
+    <!-- Panel de botones -->
     <HBox alignment="CENTER" spacing="20" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15;">
         <padding>
             <Insets bottom="10" left="10" right="10" top="10" />

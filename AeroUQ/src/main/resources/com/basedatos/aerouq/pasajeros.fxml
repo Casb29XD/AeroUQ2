@@ -34,10 +34,6 @@
     <!-- Formulario de ingreso -->
     <HBox spacing="10" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15;">
         <VBox spacing="10">
-            <Label text="ID Pasajero:"/>
-            <TextField fx:id="txtIdPasajero" promptText="Ej. P001"/>
-        </VBox>
-        <VBox spacing="10">
             <Label text="Nombre:"/>
             <TextField fx:id="txtNombre" promptText="Ej. Juan"/>
         </VBox>
@@ -55,7 +51,7 @@
         </VBox>
         <VBox spacing="10">
             <Label text="ID Vuelo:"/>
-            <TextField fx:id="txtIdVuelo" promptText="Ej. V123"/>
+            <TextField fx:id="txtIdVuelo" promptText="Ej. 123"/>
         </VBox>
     </HBox>
 
