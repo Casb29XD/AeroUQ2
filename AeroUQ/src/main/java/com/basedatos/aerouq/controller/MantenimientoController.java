@@ -17,7 +17,7 @@ public class MantenimientoController {
     @FXML private TextField txtIdAeronave;
     @FXML private TextField txtDescripcion;
     @FXML private TextField txtFechaMantenimiento;
-    @FXML private ComboBox<String> comboEstado;
+    @FXML private TextField txtEstado;
 
     @FXML private Button btnBuscar;
     @FXML private Button btnLimpiarBusqueda;
@@ -36,12 +36,8 @@ public class MantenimientoController {
     private ObservableList<MantenimientoAeronave> data = FXCollections.observableArrayList();
     private MantenimientoAeronave mantenimientoSeleccionado = null;
 
-    private static final List<String> ESTADOS = Arrays.asList("Completado", "Pendiente", "En progreso");
-
     @FXML
     private void initialize() {
-        comboEstado.setItems(FXCollections.observableArrayList(ESTADOS));
-
         colIdMantenimiento.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getIdMantenimiento())));
         colIdAeronave.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getIdAeronave())));
         colDesc.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDescripcion()));
@@ -63,13 +59,13 @@ public class MantenimientoController {
     private void cargarTabla() {
         data.clear();
         try {
-            List<Map<String, Object>> resultados = repository.buscar("MantenimientoAeronave");
+            List<Map<String, Object>> resultados = repository.buscar("MantenimientoAeronaves");
             for (Map<String, Object> fila : resultados) {
                 MantenimientoAeronave mant = new MantenimientoAeronave(
                         ((Number) fila.get("ID_Mantenimiento")).intValue(),
                         ((Number) fila.get("ID_Aeronave")).intValue(),
                         (String) fila.get("Descripcion"),
-                        String.valueOf(fila.get("FechaMantenimiento")),
+                        fila.get("FechaMantenimiento") != null ? fila.get("FechaMantenimiento").toString() : "",
                         (String) fila.get("Estado")
                 );
                 data.add(mant);
@@ -84,20 +80,20 @@ public class MantenimientoController {
     private void handleBuscarAeronave() {
         String texto = txtBuscar.getText().trim();
         if (texto.isEmpty()) {
-            mostrarAlerta("Buscar", "Ingrese el ID de mantenimiento o id de aeronave.", Alert.AlertType.INFORMATION);
+            mostrarAlerta("Buscar", "Ingrese el ID de mantenimiento, id de aeronave o descripción.", Alert.AlertType.INFORMATION);
             return;
         }
         try {
             List<Map<String, Object>> resultados;
             if (texto.matches("\\d+")) {
                 resultados = repository.buscar(
-                        "MantenimientoAeronave",
+                        "MantenimientoAeronaves",
                         "ID_Mantenimiento = ? OR ID_Aeronave = ?",
                         Arrays.asList(Integer.valueOf(texto), Integer.valueOf(texto))
                 );
             } else {
                 resultados = repository.buscar(
-                        "MantenimientoAeronave",
+                        "MantenimientoAeronaves",
                         "Descripcion LIKE ?",
                         Collections.singletonList("%" + texto + "%")
                 );
@@ -108,7 +104,7 @@ public class MantenimientoController {
                         ((Number) fila.get("ID_Mantenimiento")).intValue(),
                         ((Number) fila.get("ID_Aeronave")).intValue(),
                         (String) fila.get("Descripcion"),
-                        String.valueOf(fila.get("FechaMantenimiento")),
+                        fila.get("FechaMantenimiento") != null ? fila.get("FechaMantenimiento").toString() : "",
                         (String) fila.get("Estado")
                 );
                 data.add(mant);
@@ -141,7 +137,7 @@ public class MantenimientoController {
         txtIdAeronave.clear();
         txtDescripcion.clear();
         txtFechaMantenimiento.clear();
-        comboEstado.getSelectionModel().clearSelection();
+        txtEstado.clear();
     }
 
     private void llenarCamposDesdeSeleccion() {
@@ -149,7 +145,7 @@ public class MantenimientoController {
             txtIdAeronave.setText(String.valueOf(mantenimientoSeleccionado.getIdAeronave()));
             txtDescripcion.setText(mantenimientoSeleccionado.getDescripcion());
             txtFechaMantenimiento.setText(mantenimientoSeleccionado.getFechaMantenimiento());
-            comboEstado.setValue(mantenimientoSeleccionado.getEstado());
+            txtEstado.setText(mantenimientoSeleccionado.getEstado());
         }
     }
 
@@ -158,9 +154,9 @@ public class MantenimientoController {
         String idAeronaveStr = txtIdAeronave.getText().trim();
         String desc = txtDescripcion.getText().trim();
         String fecha = txtFechaMantenimiento.getText().trim();
-        String estado = comboEstado.getValue();
+        String estado = txtEstado.getText().trim();
 
-        if (idAeronaveStr.isEmpty() || desc.isEmpty() || fecha.isEmpty() || estado == null) {
+        if (idAeronaveStr.isEmpty() || desc.isEmpty() || fecha.isEmpty() || estado.isEmpty()) {
             mostrarAlerta("Agregar", "Todos los campos son obligatorios.", Alert.AlertType.WARNING);
             return;
         }
@@ -174,7 +170,7 @@ public class MantenimientoController {
             datos.put("FechaMantenimiento", fecha);
             datos.put("Estado", estado);
 
-            int filas = repository.insertar("MantenimientoAeronave", datos);
+            int filas = repository.insertar("MantenimientoAeronaves", datos);
             if (filas > 0) {
                 mostrarAlerta("Éxito", "Mantenimiento agregado correctamente.", Alert.AlertType.INFORMATION);
                 cargarTabla();
@@ -197,9 +193,9 @@ public class MantenimientoController {
         String idAeronaveStr = txtIdAeronave.getText().trim();
         String desc = txtDescripcion.getText().trim();
         String fecha = txtFechaMantenimiento.getText().trim();
-        String estado = comboEstado.getValue();
+        String estado = txtEstado.getText().trim();
 
-        if (idAeronaveStr.isEmpty() || desc.isEmpty() || fecha.isEmpty() || estado == null) {
+        if (idAeronaveStr.isEmpty() || desc.isEmpty() || fecha.isEmpty() || estado.isEmpty()) {
             mostrarAlerta("Editar", "Todos los campos son obligatorios.", Alert.AlertType.WARNING);
             return;
         }
@@ -214,7 +210,7 @@ public class MantenimientoController {
             datos.put("Estado", estado);
 
             int filas = repository.actualizar(
-                    "MantenimientoAeronave",
+                    "MantenimientoAeronaves",
                     datos,
                     "ID_Mantenimiento = ?",
                     Collections.singletonList(mantenimientoSeleccionado.getIdMantenimiento())
@@ -240,7 +236,7 @@ public class MantenimientoController {
         }
         try {
             int filas = repository.eliminar(
-                    "MantenimientoAeronave",
+                    "MantenimientoAeronaves",
                     "ID_Mantenimiento = ?",
                     Collections.singletonList(mantenimientoSeleccionado.getIdMantenimiento())
             );
