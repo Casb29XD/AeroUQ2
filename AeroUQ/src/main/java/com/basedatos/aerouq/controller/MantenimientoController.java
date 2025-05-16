@@ -2,22 +2,35 @@ package com.basedatos.aerouq.controller;
 
 import com.basedatos.aerouq.model.MantenimientoAeronave;
 import com.basedatos.aerouq.repository.DatabaseRepository;
+import com.basedatos.aerouq.config.DatabaseConfig;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-
-import java.sql.SQLException;
+import java.sql.*;
+import java.time.LocalDate;
 import java.util.*;
 
 public class MantenimientoController {
 
+    public static class AeronaveComboItem {
+        private final int idAeronave;
+        private final String matricula;
+        public AeronaveComboItem(int id, String matricula) {
+            this.idAeronave = id;
+            this.matricula = matricula;
+        }
+        public int getIdAeronave() { return idAeronave; }
+        public String getMatricula() { return matricula; }
+        @Override public String toString() { return matricula; }
+    }
+
     @FXML private TextField txtBuscar;
-    @FXML private TextField txtIdAeronave;
+    @FXML private ComboBox<AeronaveComboItem> comboAeronave;
     @FXML private TextField txtDescripcion;
-    @FXML private TextField txtFechaMantenimiento;
-    @FXML private TextField txtEstado;
+    @FXML private DatePicker dateFechaMantenimiento;
+    @FXML private ComboBox<String> comboEstado;
 
     @FXML private Button btnBuscar;
     @FXML private Button btnLimpiarBusqueda;
@@ -27,7 +40,7 @@ public class MantenimientoController {
 
     @FXML private TableView<MantenimientoAeronave> tableMantenimiento;
     @FXML private TableColumn<MantenimientoAeronave, String> colIdMantenimiento;
-    @FXML private TableColumn<MantenimientoAeronave, String> colIdAeronave;
+    @FXML private TableColumn<MantenimientoAeronave, String> colMatricula;
     @FXML private TableColumn<MantenimientoAeronave, String> colDesc;
     @FXML private TableColumn<MantenimientoAeronave, String> colFechaMantenimiento;
     @FXML private TableColumn<MantenimientoAeronave, String> colEstado;
@@ -38,8 +51,10 @@ public class MantenimientoController {
 
     @FXML
     private void initialize() {
+        cargarAeronavesCombo();
+
         colIdMantenimiento.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getIdMantenimiento())));
-        colIdAeronave.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getIdAeronave())));
+        colMatricula.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getMatricula()));
         colDesc.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDescripcion()));
         colFechaMantenimiento.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getFechaMantenimiento()));
         colEstado.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEstado()));
@@ -56,17 +71,38 @@ public class MantenimientoController {
         );
     }
 
+    private void cargarAeronavesCombo() {
+        comboAeronave.getItems().clear();
+        try {
+            List<Map<String, Object>> aeronaves = repository.buscar("Aeronaves");
+            for (Map<String, Object> fila : aeronaves) {
+                comboAeronave.getItems().add(
+                        new AeronaveComboItem(
+                                ((Number) fila.get("ID_Aeronave")).intValue(),
+                                (String) fila.get("Matricula")
+                        )
+                );
+            }
+        } catch (SQLException e) {
+            mostrarAlerta("Error", "No se pudieron cargar las aeronaves:\n" + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
     private void cargarTabla() {
         data.clear();
-        try {
-            List<Map<String, Object>> resultados = repository.buscar("MantenimientoAeronaves");
-            for (Map<String, Object> fila : resultados) {
+        String sql = "SELECT m.ID_Mantenimiento, m.ID_Aeronave, a.Matricula, m.Descripcion, m.FechaMantenimiento, m.Estado " +
+                "FROM MantenimientoAeronaves m JOIN Aeronaves a ON m.ID_Aeronave = a.ID_Aeronave";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
                 MantenimientoAeronave mant = new MantenimientoAeronave(
-                        ((Number) fila.get("ID_Mantenimiento")).intValue(),
-                        ((Number) fila.get("ID_Aeronave")).intValue(),
-                        (String) fila.get("Descripcion"),
-                        fila.get("FechaMantenimiento") != null ? fila.get("FechaMantenimiento").toString() : "",
-                        (String) fila.get("Estado")
+                        rs.getInt("ID_Mantenimiento"),
+                        rs.getInt("ID_Aeronave"),
+                        rs.getString("Matricula"),
+                        rs.getString("Descripcion"),
+                        rs.getString("FechaMantenimiento"),
+                        rs.getString("Estado")
                 );
                 data.add(mant);
             }
@@ -79,38 +115,28 @@ public class MantenimientoController {
     @FXML
     private void handleBuscarAeronave() {
         String texto = txtBuscar.getText().trim();
-        if (texto.isEmpty()) {
-            mostrarAlerta("Buscar", "Ingrese el ID de mantenimiento, id de aeronave o descripción.", Alert.AlertType.INFORMATION);
-            return;
-        }
-        try {
-            List<Map<String, Object>> resultados;
-            if (texto.matches("\\d+")) {
-                resultados = repository.buscar(
-                        "MantenimientoAeronaves",
-                        "ID_Mantenimiento = ? OR ID_Aeronave = ?",
-                        Arrays.asList(Integer.valueOf(texto), Integer.valueOf(texto))
-                );
-            } else {
-                resultados = repository.buscar(
-                        "MantenimientoAeronaves",
-                        "Descripcion LIKE ?",
-                        Collections.singletonList("%" + texto + "%")
-                );
-            }
-            data.clear();
-            for (Map<String, Object> fila : resultados) {
-                MantenimientoAeronave mant = new MantenimientoAeronave(
-                        ((Number) fila.get("ID_Mantenimiento")).intValue(),
-                        ((Number) fila.get("ID_Aeronave")).intValue(),
-                        (String) fila.get("Descripcion"),
-                        fila.get("FechaMantenimiento") != null ? fila.get("FechaMantenimiento").toString() : "",
-                        (String) fila.get("Estado")
-                );
-                data.add(mant);
+        String sql = "SELECT m.ID_Mantenimiento, m.ID_Aeronave, a.Matricula, m.Descripcion, m.FechaMantenimiento, m.Estado " +
+                "FROM MantenimientoAeronaves m JOIN Aeronaves a ON m.ID_Aeronave = a.ID_Aeronave " +
+                "WHERE a.Matricula LIKE ? OR m.Descripcion LIKE ?";
+        data.clear();
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, "%" + texto + "%");
+            stmt.setString(2, "%" + texto + "%");
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    MantenimientoAeronave mant = new MantenimientoAeronave(
+                            rs.getInt("ID_Mantenimiento"),
+                            rs.getInt("ID_Aeronave"),
+                            rs.getString("Matricula"),
+                            rs.getString("Descripcion"),
+                            rs.getString("FechaMantenimiento"),
+                            rs.getString("Estado")
+                    );
+                    data.add(mant);
+                }
             }
             tableMantenimiento.setItems(data);
-
             if (!data.isEmpty()) {
                 mantenimientoSeleccionado = data.get(0);
                 tableMantenimiento.getSelectionModel().select(0);
@@ -134,40 +160,47 @@ public class MantenimientoController {
     }
 
     private void limpiarCampos() {
-        txtIdAeronave.clear();
+        comboAeronave.getSelectionModel().clearSelection();
         txtDescripcion.clear();
-        txtFechaMantenimiento.clear();
-        txtEstado.clear();
+        dateFechaMantenimiento.setValue(null);
+        comboEstado.getSelectionModel().clearSelection();
     }
 
     private void llenarCamposDesdeSeleccion() {
         if (mantenimientoSeleccionado != null) {
-            txtIdAeronave.setText(String.valueOf(mantenimientoSeleccionado.getIdAeronave()));
+            for (AeronaveComboItem item : comboAeronave.getItems()) {
+                if (item.getIdAeronave() == mantenimientoSeleccionado.getIdAeronave()) {
+                    comboAeronave.setValue(item);
+                    break;
+                }
+            }
             txtDescripcion.setText(mantenimientoSeleccionado.getDescripcion());
-            txtFechaMantenimiento.setText(mantenimientoSeleccionado.getFechaMantenimiento());
-            txtEstado.setText(mantenimientoSeleccionado.getEstado());
+            try {
+                dateFechaMantenimiento.setValue(LocalDate.parse(mantenimientoSeleccionado.getFechaMantenimiento()));
+            } catch (Exception e) {
+                dateFechaMantenimiento.setValue(null);
+            }
+            comboEstado.setValue(mantenimientoSeleccionado.getEstado());
         }
     }
 
     @FXML
     private void handleAddMantenimiento() {
-        String idAeronaveStr = txtIdAeronave.getText().trim();
+        AeronaveComboItem aeronaveSel = comboAeronave.getValue();
         String desc = txtDescripcion.getText().trim();
-        String fecha = txtFechaMantenimiento.getText().trim();
-        String estado = txtEstado.getText().trim();
+        LocalDate fecha = dateFechaMantenimiento.getValue();
+        String estado = comboEstado.getValue();
 
-        if (idAeronaveStr.isEmpty() || desc.isEmpty() || fecha.isEmpty() || estado.isEmpty()) {
+        if (aeronaveSel == null || desc.isEmpty() || fecha == null || estado == null) {
             mostrarAlerta("Agregar", "Todos los campos son obligatorios.", Alert.AlertType.WARNING);
             return;
         }
 
         try {
-            int idAeronave = Integer.parseInt(idAeronaveStr);
-
             Map<String, Object> datos = new HashMap<>();
-            datos.put("ID_Aeronave", idAeronave);
+            datos.put("ID_Aeronave", aeronaveSel.getIdAeronave());
             datos.put("Descripcion", desc);
-            datos.put("FechaMantenimiento", fecha);
+            datos.put("FechaMantenimiento", fecha.toString());
             datos.put("Estado", estado);
 
             int filas = repository.insertar("MantenimientoAeronaves", datos);
@@ -177,8 +210,6 @@ public class MantenimientoController {
                 limpiarCampos();
                 mantenimientoSeleccionado = null;
             }
-        } catch (NumberFormatException nfe) {
-            mostrarAlerta("Agregar", "ID Aeronave debe ser numérico.", Alert.AlertType.WARNING);
         } catch (SQLException e) {
             mostrarAlerta("Error", "Error al agregar mantenimiento:\n" + e.getMessage(), Alert.AlertType.ERROR);
         }
@@ -190,23 +221,21 @@ public class MantenimientoController {
             mostrarAlerta("Editar", "Seleccione un mantenimiento para editar.", Alert.AlertType.INFORMATION);
             return;
         }
-        String idAeronaveStr = txtIdAeronave.getText().trim();
+        AeronaveComboItem aeronaveSel = comboAeronave.getValue();
         String desc = txtDescripcion.getText().trim();
-        String fecha = txtFechaMantenimiento.getText().trim();
-        String estado = txtEstado.getText().trim();
+        LocalDate fecha = dateFechaMantenimiento.getValue();
+        String estado = comboEstado.getValue();
 
-        if (idAeronaveStr.isEmpty() || desc.isEmpty() || fecha.isEmpty() || estado.isEmpty()) {
+        if (aeronaveSel == null || desc.isEmpty() || fecha == null || estado == null) {
             mostrarAlerta("Editar", "Todos los campos son obligatorios.", Alert.AlertType.WARNING);
             return;
         }
 
         try {
-            int idAeronave = Integer.parseInt(idAeronaveStr);
-
             Map<String, Object> datos = new HashMap<>();
-            datos.put("ID_Aeronave", idAeronave);
+            datos.put("ID_Aeronave", aeronaveSel.getIdAeronave());
             datos.put("Descripcion", desc);
-            datos.put("FechaMantenimiento", fecha);
+            datos.put("FechaMantenimiento", fecha.toString());
             datos.put("Estado", estado);
 
             int filas = repository.actualizar(
@@ -221,8 +250,6 @@ public class MantenimientoController {
                 limpiarCampos();
                 mantenimientoSeleccionado = null;
             }
-        } catch (NumberFormatException nfe) {
-            mostrarAlerta("Editar", "ID Aeronave debe ser numérico.", Alert.AlertType.WARNING);
         } catch (SQLException e) {
             mostrarAlerta("Error", "Error al actualizar mantenimiento:\n" + e.getMessage(), Alert.AlertType.ERROR);
         }

@@ -24,42 +24,25 @@
         <Insets bottom="20" left="20" right="20" top="20" />
     </padding>
 
-    <!-- Título con efecto de sombra -->
+    <!-- Título -->
     <HBox alignment="CENTER" style="-fx-background-color: #2e8b57; -fx-background-radius: 10;">
         <padding>
             <Insets bottom="10" left="15" right="15" top="10" />
         </padding>
-        <Label style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;" text="🔧 Mantenimiento de Aeronaves">
-            <effect>
-                <DropShadow>
-                    <color>
-                        <Color opacity="0.3" />
-                    </color>
-                </DropShadow>
-            </effect>
-        </Label>
+        <Label style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;" text="🔧 Mantenimiento de Aeronaves" />
         <effect>
             <DropShadow />
         </effect>
     </HBox>
 
-    <!-- Espacio después del título -->
     <HBox prefHeight="10.0" />
 
     <!-- Barra de búsqueda -->
     <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 10;">
         <Label style="-fx-font-weight: bold;" text="Buscar Aeronave:" />
-        <TextField fx:id="txtBuscar" promptText="Ingrese ID o nombre de aeronave" HBox.hgrow="ALWAYS" />
-        <Button fx:id="btnBuscar" onAction="#handleBuscarAeronave" style="-fx-background-color: #2e8b57; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="🔍 Buscar">
-            <padding>
-                <Insets bottom="8" left="15" right="15" top="8" />
-            </padding>
-        </Button>
-        <Button fx:id="btnLimpiarBusqueda" onAction="#handleLimpiarBusqueda" style="-fx-background-color: #78a885; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="❌ Limpiar">
-            <padding>
-                <Insets bottom="8" left="15" right="15" top="8" />
-            </padding>
-        </Button>
+        <TextField fx:id="txtBuscar" promptText="Ingrese matrícula o descripción" HBox.hgrow="ALWAYS" />
+        <Button fx:id="btnBuscar" onAction="#handleBuscarAeronave" style="-fx-background-color: #2e8b57; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="🔍 Buscar" />
+        <Button fx:id="btnLimpiarBusqueda" onAction="#handleLimpiarBusqueda" style="-fx-background-color: #78a885; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="❌ Limpiar" />
         <effect>
             <DropShadow>
                 <color>
@@ -72,8 +55,8 @@
     <!-- Formulario de ingreso de mantenimiento -->
     <HBox alignment="CENTER" spacing="20" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15;">
         <VBox spacing="10">
-            <Label text="ID Aeronave:" />
-            <TextField fx:id="txtIdAeronave" promptText="Ej. A320" />
+            <Label text="Aeronave (Matrícula):" />
+            <ComboBox fx:id="comboAeronave" promptText="Seleccione aeronave" />
         </VBox>
         <VBox spacing="10">
             <Label text="Descripción:" />
@@ -99,45 +82,9 @@
 
     <!-- Panel de botones -->
     <HBox alignment="CENTER" spacing="20" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15;">
-        <padding>
-            <Insets bottom="10" left="10" right="10" top="10" />
-        </padding>
-        <Button fx:id="btnAdd" alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleAddMantenimiento" style="-fx-background-color: #3cb371; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Agregar Mantenimiento ➕">
-            <padding>
-                <Insets bottom="10" left="20" right="20" top="10" />
-            </padding>
-            <effect>
-                <DropShadow height="5.0" radius="2.0" width="5.0">
-                    <color>
-                        <Color opacity="0.3" />
-                    </color>
-                </DropShadow>
-            </effect>
-        </Button>
-        <Button fx:id="btnEdit" alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleEditMantenimiento" style="-fx-background-color: #20b2aa; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Editar Mantenimiento ✏">
-            <padding>
-                <Insets bottom="10" left="20" right="20" top="10" />
-            </padding>
-            <effect>
-                <DropShadow height="5.0" radius="2.0" width="5.0">
-                    <color>
-                        <Color opacity="0.3" />
-                    </color>
-                </DropShadow>
-            </effect>
-        </Button>
-        <Button fx:id="btnDelete" alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleDeleteMantenimiento" style="-fx-background-color: #db5a42; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Eliminar Mantenimiento ➖">
-            <padding>
-                <Insets bottom="10" left="20" right="20" top="10" />
-            </padding>
-            <effect>
-                <DropShadow height="5.0" radius="2.0" width="5.0">
-                    <color>
-                        <Color opacity="0.3" />
-                    </color>
-                </DropShadow>
-            </effect>
-        </Button>
+        <Button fx:id="btnAdd" onAction="#handleAddMantenimiento" style="-fx-background-color: #3cb371; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Agregar Mantenimiento ➕" />
+        <Button fx:id="btnEdit" onAction="#handleEditMantenimiento" style="-fx-background-color: #20b2aa; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Editar Mantenimiento ✏" />
+        <Button fx:id="btnDelete" onAction="#handleDeleteMantenimiento" style="-fx-background-color: #db5a42; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Eliminar Mantenimiento ➖" />
         <effect>
             <DropShadow>
                 <color>
@@ -147,11 +94,11 @@
         </effect>
     </HBox>
 
-    <!-- TableView redimensionable -->
+    <!-- Tabla -->
     <TableView fx:id="tableMantenimiento" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #a3d2a3;" VBox.vgrow="ALWAYS">
         <columns>
             <TableColumn fx:id="colIdMantenimiento" prefWidth="100" style="-fx-alignment: CENTER;" text="ID Mantenimiento" />
-            <TableColumn fx:id="colIdAeronave" prefWidth="150" text="ID Aeronave" />
+            <TableColumn fx:id="colMatricula" prefWidth="150" text="Matrícula Aeronave" />
             <TableColumn fx:id="colDesc" prefWidth="150" text="Descripción" />
             <TableColumn fx:id="colFechaMantenimiento" prefWidth="150" text="Fecha de Mantenimiento" />
             <TableColumn fx:id="colEstado" prefWidth="150" text="Estado" />
