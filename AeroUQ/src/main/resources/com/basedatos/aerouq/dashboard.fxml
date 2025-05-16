@@ -86,7 +86,11 @@
                 <Button fx:id="btnCargoCollapsed" onAction="#loadCargoView" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
                     <graphic><Label text="🧾" style="-fx-text-fill: white; -fx-font-size: 18px;" /></graphic>
                 </Button>
-
+                <Button fx:id="btnAeronavesCollapsed" onAction="#loadAeronavesView" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px;">
+                    <graphic>
+                        <Label text="✈️" style="-fx-text-fill: white; -fx-font-size: 18px;" />
+                    </graphic>
+                </Button>
                 <effect>
                     <DropShadow><color><Color opacity="0.5" /></color></DropShadow>
                 </effect>
@@ -122,7 +126,14 @@
                         </HBox>
                     </graphic>
                 </Button>
-
+                <Button fx:id="btnAeronaves" onAction="#loadAeronavesView" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: CENTER_LEFT; -fx-font-size: 14px;">
+                    <graphic>
+                        <HBox alignment="CENTER_LEFT" spacing="15">
+                            <Label text="✈️" style="-fx-text-fill: white; -fx-font-size: 18px;" />
+                            <Label text="Aeronaves" style="-fx-text-fill: white;" />
+                        </HBox>
+                    </graphic>
+                </Button>
                 <effect>
                     <DropShadow><color><Color opacity="0.5" /></color></DropShadow>
                 </effect>

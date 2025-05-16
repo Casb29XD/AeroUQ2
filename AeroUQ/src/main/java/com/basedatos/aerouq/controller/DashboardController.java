@@ -2,7 +2,6 @@ package com.basedatos.aerouq.controller;
 
 import java.io.IOException;
 import java.net.URL;
-
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -26,6 +25,12 @@ public class DashboardController {
     @FXML
     private Button btnLockMenuExpanded;
 
+    // Botones para Aeronaves
+    @FXML
+    private Button btnAeronavesCollapsed;
+    @FXML
+    private Button btnAeronaves;
+
     private boolean menuLocked = false;
 
     /**
@@ -33,7 +38,7 @@ public class DashboardController {
      */
     private void loadView(String fxmlPath) {
         try {
-            // Usar getResource con slash inicial para seguridad en classpath
+            // Importante: la ruta debe ser absoluta y empezar con "/"
             URL location = getClass().getResource("/" + fxmlPath);
             if (location == null) {
                 System.err.println("No se encontró el archivo FXML: /" + fxmlPath);
@@ -54,7 +59,6 @@ public class DashboardController {
         }
     }
 
-    // Métodos para cargar las vistas. Usa siempre "/" como separador de carpetas.
     @FXML
     private void loadVuelosView() {
         loadView("com/basedatos/aerouq/vuelos.fxml");
@@ -105,20 +109,21 @@ public class DashboardController {
         loadView("com/basedatos/aerouq/cargo.fxml");
     }
 
+    // NUEVO: método para cargar la vista de Aeronaves
+    @FXML
+    private void loadAeronavesView() {
+        loadView("com/basedatos/aerouq/aeronave.fxml");
+    }
+
     /**
-     * Alterna entre menú colapsado y expandido, si no está bloqueado.
+     * Alterna entre menú colapsado y expandido
      */
     @FXML
     private void toggleMenuLock() {
         menuLocked = !menuLocked;
 
-        if (menuLocked) {
-            menuBoxCollapsed.setVisible(false);
-            menuBoxExpanded.setVisible(true);
-        } else {
-            menuBoxCollapsed.setVisible(true);
-            menuBoxExpanded.setVisible(false);
-        }
+        menuBoxCollapsed.setVisible(!menuLocked);
+        menuBoxExpanded.setVisible(menuLocked);
 
         btnLockMenu.setText(menuLocked ? "🔒" : "🔓");
         btnLockMenuExpanded.setText(menuLocked ? "🔒" : "🔓");
@@ -135,20 +140,7 @@ public class DashboardController {
         btnLockMenu.setText("🔓");
         btnLockMenuExpanded.setText("🔓");
 
-        // Carga vista inicial
+        // Vista inicial
         loadVuelosView();
-
-        // (Opcional) Prueba de carga FXML "cargo.fxml"
-        // testFXMLLoad();
-    }
-
-    // Método opcional para depuración, verifica si cargo.fxml existe en el classpath
-    private void testFXMLLoad() {
-        URL url = getClass().getResource("/com/basedatos/aerouq/cargo.fxml");
-        if (url == null) {
-            System.out.println("NO ENCONTRADO");
-        } else {
-            System.out.println("ENCONTRADO: " + url);
-        }
     }
 }
