@@ -7,7 +7,7 @@
 <?import javafx.scene.paint.Color?>
 
 <VBox xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/23.0.1"
-      fx:controller="com.example.controllers.PasajerosController"
+      fx:controller="com.basedatos.aerouq.controller.PasajerosController"
       prefWidth="800.0" prefHeight="600.0" spacing="15"
       style="-fx-background-color: linear-gradient(to bottom, #e6f5e9, #d4ebd7);">
 

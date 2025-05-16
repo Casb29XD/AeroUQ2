@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.paint.Color?>
 
-<VBox prefHeight="500.0" prefWidth="800.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #e6f5e9, #d4ebd7);" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.basedatos.aerouq.controller.EmbargueController">
+<VBox prefHeight="500.0" prefWidth="800.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #e6f5e9, #d4ebd7);" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.basedatos.aerouq.controller.EmbarqueController">
     <padding>
         <Insets bottom="20" left="20" right="20" top="20" />
     </padding>
@@ -35,7 +35,7 @@
     <!-- Barra de búsqueda -->
     <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 10;">
         <Label style="-fx-font-weight: bold;" text="Buscar puerta de embarque:" />
-        <TextField fx:id="txtBuscar" promptText="Ingrese ID o número de la puerta" HBox.hgrow="ALWAYS" />
+        <TextField fx:id="txtBuscar" promptText="Ingrese ID de la puerta" HBox.hgrow="ALWAYS" />
         <Button fx:id="btnBuscar" onAction="#handleBuscarPuerta" style="-fx-background-color: #2e8b57; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="🔍 Buscar" />
         <Button fx:id="btnLimpiarBusqueda" onAction="#handleLimpiarBusqueda" style="-fx-background-color: #78a885; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="❌ Limpiar" />
     </HBox>
@@ -43,9 +43,9 @@
     <!-- Campos de Número de puerta y Estado -->
     <HBox alignment="CENTER" spacing="15" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 10;">
         <Label text="Número de puerta:" />
-        <TextField fx:id="txtNoPuerta" promptText="Ej. A12" />
+        <TextField fx:id="txtNumeroPuerta" promptText="Ej. A12" />
         <Label text="Estado:" />
-        <TextField fx:id="txtEstado" promptText="Ej. Activa / Inactiva" />
+        <TextField fx:id="txtEstado" promptText="Ej. Disponible / Ocupada / Mantenimiento" />
     </HBox>
 
     <!-- Botones de acción -->
@@ -56,10 +56,10 @@
     </HBox>
 
     <!-- Tabla -->
-    <TableView fx:id="tableEmbargue" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #a3d2a3;" VBox.vgrow="ALWAYS">
+    <TableView fx:id="tablePuertas" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #a3d2a3;" VBox.vgrow="ALWAYS">
         <columns>
             <TableColumn fx:id="colIdPuerta" prefWidth="100" text="ID Puerta" />
-            <TableColumn fx:id="colNoPuerta" prefWidth="150" text="Número de puerta" />
+            <TableColumn fx:id="colNumeroPuerta" prefWidth="150" text="Número de puerta" />
             <TableColumn fx:id="colEstado" prefWidth="150" text="Estado" />
         </columns>
         <columnResizePolicy>

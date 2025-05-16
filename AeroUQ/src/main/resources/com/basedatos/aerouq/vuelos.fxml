@@ -61,10 +61,10 @@
         <TextField fx:id="txtDestino" promptText="Ej: Medellín" GridPane.rowIndex="1" GridPane.columnIndex="3"/>
 
         <Label text="Fecha/Hora Salida:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-        <TextField fx:id="txtFechaSalida" promptText="YYYY-MM-DD HH:MM" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+        <TextField fx:id="txtFechaHoraSalida" promptText="YYYY-MM-DD HH:MM" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
         <Label text="Fecha/Hora Llegada:" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
-        <TextField fx:id="txtFechaLlegada" promptText="YYYY-MM-DD HH:MM" GridPane.rowIndex="2" GridPane.columnIndex="3"/>
+        <TextField fx:id="txtFechaHoraLlegada" promptText="YYYY-MM-DD HH:MM" GridPane.rowIndex="2" GridPane.columnIndex="3"/>
 
         <Label text="Estado del Vuelo:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
         <TextField fx:id="txtEstadoVuelo" promptText="Ej: En vuelo, Retrasado" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
@@ -94,8 +94,8 @@
             <TableColumn fx:id="colIdAerolinea" prefWidth="100" style="-fx-alignment: CENTER;" text="ID Aerolínea" />
             <TableColumn fx:id="colOrigen" prefWidth="130" text="Origen" />
             <TableColumn fx:id="colDestino" prefWidth="130" text="Destino" />
-            <TableColumn fx:id="colFechaSalida" prefWidth="150" text="Fecha/Hora Salida" />
-            <TableColumn fx:id="colFechaLlegada" prefWidth="150" text="Fecha/Hora Llegada" />
+            <TableColumn fx:id="colFechaHoraSalida" prefWidth="150" text="Fecha/Hora Salida" />
+            <TableColumn fx:id="colFechaHoraLlegada" prefWidth="150" text="Fecha/Hora Llegada" />
             <TableColumn fx:id="colEstadoVuelo" prefWidth="120" text="Estado del Vuelo" />
             <TableColumn fx:id="colIdPuerta" prefWidth="80" style="-fx-alignment: CENTER;" text="ID Puerta" />
         </columns>
