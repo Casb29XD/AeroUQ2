@@ -2,10 +2,12 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.collections.FXCollections?>
 <?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.Color?>
 
+<?import java.lang.String?>
 <VBox prefHeight="600.0" prefWidth="800.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #e6f5e9, #d4ebd7);" xmlns="http://javafx.com/javafx/20" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.basedatos.aerouq.controller.VuelosController">
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
@@ -51,8 +53,8 @@
         <Label text="Número de Vuelo:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
         <TextField fx:id="txtNumeroVuelo" promptText="Ej: AV123" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-        <Label text="ID Aerolínea:" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
-        <TextField fx:id="txtIdAerolinea" promptText="Ej: 10" GridPane.rowIndex="0" GridPane.columnIndex="3"/>
+        <Label text="Aerolínea:" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+        <ComboBox fx:id="comboAerolinea" promptText="Seleccione aerolínea" GridPane.rowIndex="0" GridPane.columnIndex="3"/>
 
         <Label text="Origen:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
         <TextField fx:id="txtOrigen" promptText="Ej: Bogotá" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
@@ -73,10 +75,18 @@
         <TextField fx:id="txtHoraLlegada" promptText="HH:mm" GridPane.rowIndex="3" GridPane.columnIndex="3"/>
 
         <Label text="Estado del Vuelo:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-        <TextField fx:id="txtEstadoVuelo" promptText="Ej: En vuelo, Retrasado" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+        <ComboBox fx:id="comboEstadoVuelo" promptText="Seleccione estado" GridPane.rowIndex="4" GridPane.columnIndex="1">
+            <items>
+                <FXCollections fx:factory="observableArrayList">
+                    <String fx:value="En horario"/>
+                    <String fx:value="Retrasado"/>
+                    <String fx:value="Cancelado"/>
+                </FXCollections>
+            </items>
+        </ComboBox>
 
-        <Label text="ID Puerta:" GridPane.rowIndex="4" GridPane.columnIndex="2"/>
-        <TextField fx:id="txtIdPuerta" promptText="Ej: 5" GridPane.rowIndex="4" GridPane.columnIndex="3"/>
+        <Label text="Puerta de Embarque:" GridPane.rowIndex="4" GridPane.columnIndex="2"/>
+        <ComboBox fx:id="comboPuerta" promptText="Seleccione puerta" GridPane.rowIndex="4" GridPane.columnIndex="3"/>
     </GridPane>
 
     <!-- Panel de botones -->
@@ -97,13 +107,13 @@
         <columns>
             <TableColumn fx:id="colIdVuelo" prefWidth="80" style="-fx-alignment: CENTER;" text="ID Vuelo" />
             <TableColumn fx:id="colNumeroVuelo" prefWidth="120" text="Número de Vuelo" />
-            <TableColumn fx:id="colIdAerolinea" prefWidth="100" style="-fx-alignment: CENTER;" text="ID Aerolínea" />
+            <TableColumn fx:id="colAerolinea" prefWidth="120" text="Aerolínea" />
             <TableColumn fx:id="colOrigen" prefWidth="130" text="Origen" />
             <TableColumn fx:id="colDestino" prefWidth="130" text="Destino" />
             <TableColumn fx:id="colFechaHoraSalida" prefWidth="150" text="Fecha/Hora Salida" />
             <TableColumn fx:id="colFechaHoraLlegada" prefWidth="150" text="Fecha/Hora Llegada" />
             <TableColumn fx:id="colEstadoVuelo" prefWidth="120" text="Estado del Vuelo" />
-            <TableColumn fx:id="colIdPuerta" prefWidth="80" style="-fx-alignment: CENTER;" text="ID Puerta" />
+            <TableColumn fx:id="colPuerta" prefWidth="120" text="Puerta de Embarque" />
         </columns>
         <columnResizePolicy>
             <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />

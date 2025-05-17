@@ -50,8 +50,8 @@
             <TextField fx:id="txtNacionalidad" promptText="Ej. Argentina"/>
         </VBox>
         <VBox spacing="10">
-            <Label text="ID Vuelo:"/>
-            <TextField fx:id="txtIdVuelo" promptText="Ej. 123"/>
+            <Label text="Vuelo:"/>
+            <ComboBox fx:id="comboVuelo" promptText="Seleccione vuelo"/>
         </VBox>
     </HBox>
 
@@ -74,7 +74,7 @@
             <TableColumn fx:id="colApellido" text="Apellido" prefWidth="130"/>
             <TableColumn fx:id="colDocumentoIdentidad" text="Documento" prefWidth="130"/>
             <TableColumn fx:id="colNacionalidad" text="Nacionalidad" prefWidth="130"/>
-            <TableColumn fx:id="colIdVuelo" text="ID Vuelo" prefWidth="130" style="-fx-alignment: CENTER;"/>
+            <TableColumn fx:id="colIdVuelo" text="Vuelo" prefWidth="130" style="-fx-alignment: CENTER;"/>
         </columns>
     </TableView>
 </VBox>

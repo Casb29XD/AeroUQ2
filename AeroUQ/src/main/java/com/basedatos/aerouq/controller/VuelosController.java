@@ -2,30 +2,32 @@ package com.basedatos.aerouq.controller;
 
 import com.basedatos.aerouq.model.Vuelo;
 import com.basedatos.aerouq.repository.DatabaseRepository;
+import com.basedatos.aerouq.config.DatabaseConfig;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.Date;
 
 public class VuelosController {
 
     @FXML private TextField txtNumeroVuelo;
-    @FXML private TextField txtIdAerolinea;
+    @FXML private ComboBox<String> comboAerolinea;
     @FXML private TextField txtOrigen;
     @FXML private TextField txtDestino;
     @FXML private DatePicker datePickerSalida;
     @FXML private TextField txtHoraSalida;
     @FXML private DatePicker datePickerLlegada;
     @FXML private TextField txtHoraLlegada;
-    @FXML private TextField txtEstadoVuelo;
-    @FXML private TextField txtIdPuerta;
+    @FXML private ComboBox<String> comboEstadoVuelo;
+    @FXML private ComboBox<String> comboPuerta;
     @FXML private TextField txtBuscar;
     @FXML private Button btnBuscar;
     @FXML private Button btnLimpiarBusqueda;
@@ -36,13 +38,13 @@ public class VuelosController {
     @FXML private TableView<Vuelo> tableVuelos;
     @FXML private TableColumn<Vuelo, String> colIdVuelo;
     @FXML private TableColumn<Vuelo, String> colNumeroVuelo;
-    @FXML private TableColumn<Vuelo, String> colIdAerolinea;
+    @FXML private TableColumn<Vuelo, String> colAerolinea;
     @FXML private TableColumn<Vuelo, String> colOrigen;
     @FXML private TableColumn<Vuelo, String> colDestino;
     @FXML private TableColumn<Vuelo, String> colFechaHoraSalida;
     @FXML private TableColumn<Vuelo, String> colFechaHoraLlegada;
     @FXML private TableColumn<Vuelo, String> colEstadoVuelo;
-    @FXML private TableColumn<Vuelo, String> colIdPuerta;
+    @FXML private TableColumn<Vuelo, String> colPuerta;
 
     private final DatabaseRepository repository = new DatabaseRepository();
     private ObservableList<Vuelo> data = FXCollections.observableArrayList();
@@ -50,14 +52,28 @@ public class VuelosController {
     private Vuelo vueloSeleccionado = null;
     private final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+    // Aerolíneas
+    private Map<String, Integer> nombreAerolineaToId = new HashMap<>();
+    private Map<Integer, String> idToNombreAerolinea = new HashMap<>();
+    // Puertas
+    private Map<String, Integer> numeroPuertaToId = new HashMap<>();
+    private Map<Integer, String> idToNumeroPuerta = new HashMap<>();
+
+    private static final List<String> ESTADOS = Arrays.asList("En horario", "Retrasado", "Cancelado");
+
     @FXML
     private void initialize() {
+        comboEstadoVuelo.setItems(FXCollections.observableArrayList(ESTADOS));
+        cargarAerolineasCombo();
+        cargarPuertasCombo();
+
         colIdVuelo.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getIdVuelo())));
         colNumeroVuelo.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getNumeroVuelo()));
-        colIdAerolinea.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getIdAerolinea())));
+        colAerolinea.setCellValueFactory(cellData -> new SimpleStringProperty(
+                idToNombreAerolinea.getOrDefault(cellData.getValue().getIdAerolinea(), String.valueOf(cellData.getValue().getIdAerolinea()))
+        ));
         colOrigen.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getOrigen()));
         colDestino.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDestino()));
-
         colFechaHoraSalida.setCellValueFactory(cellData -> {
             Date fecha = cellData.getValue().getFechaHoraSalida();
             return new SimpleStringProperty(fecha != null ? dateTimeFormat.format(fecha) : "");
@@ -66,9 +82,10 @@ public class VuelosController {
             Date fecha = cellData.getValue().getFechaHoraLlegada();
             return new SimpleStringProperty(fecha != null ? dateTimeFormat.format(fecha) : "");
         });
-
         colEstadoVuelo.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEstadoVuelo()));
-        colIdPuerta.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getIdPuerta())));
+        colPuerta.setCellValueFactory(cellData -> new SimpleStringProperty(
+                idToNumeroPuerta.getOrDefault(cellData.getValue().getIdPuerta(), String.valueOf(cellData.getValue().getIdPuerta()))
+        ));
 
         cargarTabla();
 
@@ -82,21 +99,70 @@ public class VuelosController {
         );
     }
 
+    private void cargarAerolineasCombo() {
+        comboAerolinea.getItems().clear();
+        nombreAerolineaToId.clear();
+        idToNombreAerolinea.clear();
+        try {
+            List<Map<String, Object>> aerolineas = repository.buscar("Aerolineas");
+            for (Map<String, Object> fila : aerolineas) {
+                int id = ((Number) fila.get("ID_Aerolinea")).intValue();
+                String nombre = (String) fila.get("Nombre");
+                nombreAerolineaToId.put(nombre, id);
+                idToNombreAerolinea.put(id, nombre);
+                comboAerolinea.getItems().add(nombre);
+            }
+        } catch (SQLException e) {
+            mostrarAlerta("Error", "No se pudieron cargar las aerolíneas:\n" + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    private void cargarPuertasCombo() {
+        comboPuerta.getItems().clear();
+        numeroPuertaToId.clear();
+        idToNumeroPuerta.clear();
+        try {
+            List<Map<String, Object>> puertas = repository.buscar("PuertasDeEmbarque");
+            for (Map<String, Object> fila : puertas) {
+                int id = ((Number) fila.get("ID_Puerta")).intValue();
+                String numeroPuerta = (String) fila.get("NumeroPuerta");
+                numeroPuertaToId.put(numeroPuerta, id);
+                idToNumeroPuerta.put(id, numeroPuerta);
+                comboPuerta.getItems().add(numeroPuerta);
+            }
+        } catch (SQLException e) {
+            mostrarAlerta("Error", "No se pudieron cargar las puertas:\n" + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
     private void cargarTabla() {
         data.clear();
-        try {
-            List<Map<String, Object>> resultados = repository.buscar("Vuelos");
-            for (Map<String, Object> fila : resultados) {
+        String sql = "SELECT v.ID_Vuelo, v.NumeroVuelo, v.ID_Aerolinea, a.Nombre as NombreAerolinea, v.Origen, v.Destino, v.FechaHoraSalida, v.FechaHoraLlegada, v.EstadoVuelo, v.ID_Puerta, p.NumeroPuerta " +
+                "FROM Vuelos v " +
+                "JOIN Aerolineas a ON v.ID_Aerolinea = a.ID_Aerolinea " +
+                "LEFT JOIN PuertasDeEmbarque p ON v.ID_Puerta = p.ID_Puerta";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                int idAerolinea = rs.getInt("ID_Aerolinea");
+                String nombreAerolinea = rs.getString("NombreAerolinea");
+                idToNombreAerolinea.put(idAerolinea, nombreAerolinea);
+
+                int idPuerta = rs.getObject("ID_Puerta") != null ? rs.getInt("ID_Puerta") : 0;
+                String numeroPuerta = rs.getString("NumeroPuerta");
+                idToNumeroPuerta.put(idPuerta, numeroPuerta);
+
                 Vuelo vuelo = new Vuelo(
-                        (int) fila.get("ID_Vuelo"),
-                        (String) fila.get("NumeroVuelo"),
-                        (int) fila.get("ID_Aerolinea"),
-                        (String) fila.get("Origen"),
-                        (String) fila.get("Destino"),
-                        fila.get("FechaHoraSalida") != null ? (Date) fila.get("FechaHoraSalida") : null,
-                        fila.get("FechaHoraLlegada") != null ? (Date) fila.get("FechaHoraLlegada") : null,
-                        (String) fila.get("EstadoVuelo"),
-                        fila.get("ID_Puerta") != null ? (int) fila.get("ID_Puerta") : 0
+                        rs.getInt("ID_Vuelo"),
+                        rs.getString("NumeroVuelo"),
+                        idAerolinea,
+                        rs.getString("Origen"),
+                        rs.getString("Destino"),
+                        rs.getTimestamp("FechaHoraSalida"),
+                        rs.getTimestamp("FechaHoraLlegada"),
+                        rs.getString("EstadoVuelo"),
+                        idPuerta
                 );
                 data.add(vuelo);
             }
@@ -108,33 +174,57 @@ public class VuelosController {
 
     @FXML
     private void handleBuscarVuelo() {
-        String buscarId = txtBuscar.getText().trim();
-        if (buscarId.isEmpty()) {
-            mostrarAlerta("Buscar", "Ingrese el ID del vuelo a buscar.", Alert.AlertType.INFORMATION);
-            return;
-        }
-        try {
-            List<Map<String, Object>> resultados = repository.buscar("Vuelos", "ID_Vuelo = ?", Collections.singletonList(Integer.valueOf(buscarId)));
-            if (resultados.isEmpty()) {
-                mostrarAlerta("Buscar", "No se encontró ningún vuelo con ese ID.", Alert.AlertType.INFORMATION);
-                return;
+        String buscar = txtBuscar.getText().trim();
+        String sql = "SELECT v.ID_Vuelo, v.NumeroVuelo, v.ID_Aerolinea, a.Nombre as NombreAerolinea, v.Origen, v.Destino, v.FechaHoraSalida, v.FechaHoraLlegada, v.EstadoVuelo, v.ID_Puerta, p.NumeroPuerta " +
+                "FROM Vuelos v " +
+                "JOIN Aerolineas a ON v.ID_Aerolinea = a.ID_Aerolinea " +
+                "LEFT JOIN PuertasDeEmbarque p ON v.ID_Puerta = p.ID_Puerta " +
+                "WHERE v.ID_Vuelo = ? OR v.NumeroVuelo LIKE ?";
+        data.clear();
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            try {
+                int id = Integer.parseInt(buscar);
+                stmt.setInt(1, id);
+            } catch (NumberFormatException e) {
+                stmt.setInt(1, -1);
             }
-            Map<String, Object> fila = resultados.get(0);
-            Vuelo vuelo = new Vuelo(
-                    (int) fila.get("ID_Vuelo"),
-                    (String) fila.get("NumeroVuelo"),
-                    (int) fila.get("ID_Aerolinea"),
-                    (String) fila.get("Origen"),
-                    (String) fila.get("Destino"),
-                    fila.get("FechaHoraSalida") != null ? (Date) fila.get("FechaHoraSalida") : null,
-                    fila.get("FechaHoraLlegada") != null ? (Date) fila.get("FechaHoraLlegada") : null,
-                    (String) fila.get("EstadoVuelo"),
-                    fila.get("ID_Puerta") != null ? (int) fila.get("ID_Puerta") : 0
-            );
-            vueloSeleccionado = vuelo;
-            tableVuelos.getSelectionModel().select(buscarVueloEnTabla(vuelo.getIdVuelo()));
-            llenarCamposDesdeSeleccion();
-        } catch (Exception e) {
+            stmt.setString(2, "%" + buscar + "%");
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int idAerolinea = rs.getInt("ID_Aerolinea");
+                    String nombreAerolinea = rs.getString("NombreAerolinea");
+                    idToNombreAerolinea.put(idAerolinea, nombreAerolinea);
+
+                    int idPuerta = rs.getObject("ID_Puerta") != null ? rs.getInt("ID_Puerta") : 0;
+                    String numeroPuerta = rs.getString("NumeroPuerta");
+                    idToNumeroPuerta.put(idPuerta, numeroPuerta);
+
+                    Vuelo vuelo = new Vuelo(
+                            rs.getInt("ID_Vuelo"),
+                            rs.getString("NumeroVuelo"),
+                            idAerolinea,
+                            rs.getString("Origen"),
+                            rs.getString("Destino"),
+                            rs.getTimestamp("FechaHoraSalida"),
+                            rs.getTimestamp("FechaHoraLlegada"),
+                            rs.getString("EstadoVuelo"),
+                            idPuerta
+                    );
+                    data.add(vuelo);
+                }
+            }
+            tableVuelos.setItems(data);
+            if (!data.isEmpty()) {
+                vueloSeleccionado = data.get(0);
+                tableVuelos.getSelectionModel().select(0);
+                llenarCamposDesdeSeleccion();
+            } else {
+                limpiarCampos();
+                mostrarAlerta("Buscar", "No se encontraron vuelos con ese criterio.", Alert.AlertType.INFORMATION);
+            }
+        } catch (SQLException e) {
             mostrarAlerta("Error", "Error al buscar vuelo:\n" + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
@@ -144,26 +234,27 @@ public class VuelosController {
         txtBuscar.clear();
         limpiarCampos();
         tableVuelos.getSelectionModel().clearSelection();
+        cargarTabla();
         vueloSeleccionado = null;
     }
 
     private void limpiarCampos() {
         txtNumeroVuelo.clear();
-        txtIdAerolinea.clear();
+        comboAerolinea.getSelectionModel().clearSelection();
         txtOrigen.clear();
         txtDestino.clear();
         datePickerSalida.setValue(null);
         txtHoraSalida.clear();
         datePickerLlegada.setValue(null);
         txtHoraLlegada.clear();
-        txtEstadoVuelo.clear();
-        txtIdPuerta.clear();
+        comboEstadoVuelo.getSelectionModel().clearSelection();
+        comboPuerta.getSelectionModel().clearSelection();
     }
 
     private void llenarCamposDesdeSeleccion() {
         if (vueloSeleccionado != null) {
             txtNumeroVuelo.setText(vueloSeleccionado.getNumeroVuelo());
-            txtIdAerolinea.setText(String.valueOf(vueloSeleccionado.getIdAerolinea()));
+            comboAerolinea.setValue(idToNombreAerolinea.get(vueloSeleccionado.getIdAerolinea()));
             txtOrigen.setText(vueloSeleccionado.getOrigen());
             txtDestino.setText(vueloSeleccionado.getDestino());
 
@@ -188,8 +279,8 @@ public class VuelosController {
                 txtHoraLlegada.clear();
             }
 
-            txtEstadoVuelo.setText(vueloSeleccionado.getEstadoVuelo());
-            txtIdPuerta.setText(String.valueOf(vueloSeleccionado.getIdPuerta()));
+            comboEstadoVuelo.setValue(vueloSeleccionado.getEstadoVuelo());
+            comboPuerta.setValue(idToNumeroPuerta.get(vueloSeleccionado.getIdPuerta()));
         }
     }
 
@@ -197,15 +288,22 @@ public class VuelosController {
     private void handleAddVuelo() {
         try {
             String numeroVuelo = txtNumeroVuelo.getText().trim();
-            int idAerolinea = Integer.parseInt(txtIdAerolinea.getText().trim());
+            String nombreAerolinea = comboAerolinea.getValue();
+            Integer idAerolinea = nombreAerolineaToId.get(nombreAerolinea);
             String origen = txtOrigen.getText().trim();
             String destino = txtDestino.getText().trim();
 
             Date fechaHoraSalida = getFechaHora(datePickerSalida, txtHoraSalida);
             Date fechaHoraLlegada = getFechaHora(datePickerLlegada, txtHoraLlegada);
 
-            String estadoVuelo = txtEstadoVuelo.getText().trim();
-            int idPuerta = Integer.parseInt(txtIdPuerta.getText().trim());
+            String estadoVuelo = comboEstadoVuelo.getValue();
+            String numeroPuerta = comboPuerta.getValue();
+            Integer idPuerta = numeroPuertaToId.get(numeroPuerta);
+
+            if (numeroVuelo.isEmpty() || nombreAerolinea == null || idAerolinea == null || origen.isEmpty() || destino.isEmpty() || estadoVuelo == null || numeroPuerta == null || idPuerta == null) {
+                mostrarAlerta("Advertencia", "Todos los campos obligatorios deben estar completos.", Alert.AlertType.WARNING);
+                return;
+            }
 
             Map<String, Object> datos = new HashMap<>();
             datos.put("NumeroVuelo", numeroVuelo);
@@ -241,15 +339,22 @@ public class VuelosController {
         }
         try {
             String numeroVuelo = txtNumeroVuelo.getText().trim();
-            int idAerolinea = Integer.parseInt(txtIdAerolinea.getText().trim());
+            String nombreAerolinea = comboAerolinea.getValue();
+            Integer idAerolinea = nombreAerolineaToId.get(nombreAerolinea);
             String origen = txtOrigen.getText().trim();
             String destino = txtDestino.getText().trim();
 
             Date fechaHoraSalida = getFechaHora(datePickerSalida, txtHoraSalida);
             Date fechaHoraLlegada = getFechaHora(datePickerLlegada, txtHoraLlegada);
 
-            String estadoVuelo = txtEstadoVuelo.getText().trim();
-            int idPuerta = Integer.parseInt(txtIdPuerta.getText().trim());
+            String estadoVuelo = comboEstadoVuelo.getValue();
+            String numeroPuerta = comboPuerta.getValue();
+            Integer idPuerta = numeroPuertaToId.get(numeroPuerta);
+
+            if (numeroVuelo.isEmpty() || nombreAerolinea == null || idAerolinea == null || origen.isEmpty() || destino.isEmpty() || estadoVuelo == null || numeroPuerta == null || idPuerta == null) {
+                mostrarAlerta("Advertencia", "Todos los campos obligatorios deben estar completos.", Alert.AlertType.WARNING);
+                return;
+            }
 
             Map<String, Object> datos = new HashMap<>();
             datos.put("NumeroVuelo", numeroVuelo);
@@ -303,13 +408,6 @@ public class VuelosController {
         } catch (SQLException e) {
             mostrarAlerta("Error", "Error al eliminar vuelo:\n" + e.getMessage(), Alert.AlertType.ERROR);
         }
-    }
-
-    private Vuelo buscarVueloEnTabla(int idVuelo) {
-        for (Vuelo v : data) {
-            if (v.getIdVuelo() == idVuelo) return v;
-        }
-        return null;
     }
 
     private Date getFechaHora(DatePicker datePicker, TextField txtHora) throws ParseException {

@@ -14,10 +14,10 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.paint.Color?>
-
 <?import javafx.collections.FXCollections?>
 <?import java.lang.String?>
-<VBox prefHeight="500.0" prefWidth="800.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #e6f5e9, #d4ebd7;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.basedatos.aerouq.controller.EquipajeController">
+
+<VBox prefHeight="500.0" prefWidth="800.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #e6f5e9, #d4ebd7);" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.basedatos.aerouq.controller.EquipajeController">
     <padding>
         <Insets bottom="20" left="20" right="20" top="20" />
     </padding>
@@ -41,23 +41,14 @@
         </effect>
     </HBox>
 
-    <!-- Espacio después del título -->
     <HBox prefHeight="10.0" />
 
     <!-- Barra de búsqueda -->
     <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 10;">
         <Label style="-fx-font-weight: bold;" text="Buscar equipaje:" />
-        <TextField fx:id="txtBuscar" promptText="Ingrese ID o nombre del pasajero" HBox.hgrow="ALWAYS" />
-        <Button fx:id="btnBuscar" onAction="#handleBuscarEquipaje" style="-fx-background-color: #2e8b57; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="🔍 Buscar">
-            <padding>
-                <Insets bottom="8" left="15" right="15" top="8" />
-            </padding>
-        </Button>
-        <Button fx:id="btnLimpiarBusqueda" onAction="#handleLimpiarBusqueda" style="-fx-background-color: #78a885; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="❌ Limpiar">
-            <padding>
-                <Insets bottom="8" left="15" right="15" top="8" />
-            </padding>
-        </Button>
+        <TextField fx:id="txtBuscar" promptText="Ingrese código de barras, vuelo o pasajero" HBox.hgrow="ALWAYS" />
+        <Button fx:id="btnBuscar" onAction="#handleBuscarEquipaje" style="-fx-background-color: #2e8b57; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="🔍 Buscar"/>
+        <Button fx:id="btnLimpiarBusqueda" onAction="#handleLimpiarBusqueda" style="-fx-background-color: #78a885; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="❌ Limpiar"/>
         <effect>
             <DropShadow>
                 <color>
@@ -75,11 +66,11 @@
         <Label style="-fx-font-weight: bold;" text="Peso:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
         <TextField fx:id="txtPeso" promptText="Peso" GridPane.columnIndex="3" GridPane.rowIndex="0" />
 
-        <Label style="-fx-font-weight: bold;" text="ID Vuelo:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-        <TextField fx:id="txtIdVuelo" promptText="ID Vuelo" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+        <Label style="-fx-font-weight: bold;" text="Vuelo:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+        <ComboBox fx:id="comboVuelo" promptText="Seleccione vuelo" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-        <Label style="-fx-font-weight: bold;" text="ID Pasajero:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-        <TextField fx:id="txtIdPasajero" promptText="ID Pasajero" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+        <Label style="-fx-font-weight: bold;" text="Pasajero:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+        <ComboBox fx:id="comboPasajero" promptText="Seleccione pasajero" GridPane.columnIndex="3" GridPane.rowIndex="1" />
 
         <Label style="-fx-font-weight: bold;" text="Estado:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
         <ComboBox fx:id="comboEstado" promptText="Seleccione estado" GridPane.columnIndex="1" GridPane.rowIndex="2">
@@ -104,47 +95,13 @@
         </rowConstraints>
     </GridPane>
 
-    <!-- Panel de botones -->
     <HBox alignment="CENTER" spacing="20" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15;">
         <padding>
             <Insets bottom="10" left="10" right="10" top="10" />
         </padding>
-        <Button fx:id="btnAdd" alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleAddEquipaje" style="-fx-background-color: #3cb371; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Agregar Equipaje ➕">
-            <padding>
-                <Insets bottom="10" left="20" right="20" top="10" />
-            </padding>
-            <effect>
-                <DropShadow height="5.0" radius="2.0" width="5.0">
-                    <color>
-                        <Color opacity="0.3" />
-                    </color>
-                </DropShadow>
-            </effect>
-        </Button>
-        <Button fx:id="btnEdit" alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleEditEquipaje" style="-fx-background-color: #20b2aa; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Editar Equipaje ✏">
-            <padding>
-                <Insets bottom="10" left="20" right="20" top="10" />
-            </padding>
-            <effect>
-                <DropShadow height="5.0" radius="2.0" width="5.0">
-                    <color>
-                        <Color opacity="0.3" />
-                    </color>
-                </DropShadow>
-            </effect>
-        </Button>
-        <Button fx:id="btnDelete" alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleDeleteEquipaje" style="-fx-background-color: #db5a42; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Eliminar Equipaje ➖">
-            <padding>
-                <Insets bottom="10" left="20" right="20" top="10" />
-            </padding>
-            <effect>
-                <DropShadow height="5.0" radius="2.0" width="5.0">
-                    <color>
-                        <Color opacity="0.3" />
-                    </color>
-                </DropShadow>
-            </effect>
-        </Button>
+        <Button fx:id="btnAdd" alignment="CENTER" onAction="#handleAddEquipaje" style="-fx-background-color: #3cb371; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Agregar Equipaje ➕"/>
+        <Button fx:id="btnEdit" alignment="CENTER" onAction="#handleEditEquipaje" style="-fx-background-color: #20b2aa; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Editar Equipaje ✏"/>
+        <Button fx:id="btnDelete" alignment="CENTER" onAction="#handleDeleteEquipaje" style="-fx-background-color: #db5a42; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Eliminar Equipaje ➖"/>
         <effect>
             <DropShadow>
                 <color>
@@ -154,15 +111,14 @@
         </effect>
     </HBox>
 
-    <!-- TableView redimensionable -->
     <TableView fx:id="tableEquipaje" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #a3d2a3;" VBox.vgrow="ALWAYS">
         <columns>
-            <TableColumn fx:id="colIdMaleta" prefWidth="100" style="-fx-alignment: CENTER;" text="ID Maleta" />
-            <TableColumn fx:id="colCodBarras" prefWidth="150" text="Código de Barras" />
-            <TableColumn fx:id="colPeso" prefWidth="150" text="Peso" />
-            <TableColumn fx:id="colIdVuelo" prefWidth="150" text="ID Vuelo" />
-            <TableColumn fx:id="colIdPasajero" prefWidth="150" text="ID Pasajero" />
-            <TableColumn fx:id="colEstado" prefWidth="150" text="Estado" />
+            <TableColumn fx:id="colIdMaleta" prefWidth="90" style="-fx-alignment: CENTER;" text="ID Maleta" />
+            <TableColumn fx:id="colCodBarras" prefWidth="140" text="Código de Barras" />
+            <TableColumn fx:id="colPeso" prefWidth="90" text="Peso" />
+            <TableColumn fx:id="colVuelo" prefWidth="150" text="Vuelo" />
+            <TableColumn fx:id="colPasajero" prefWidth="170" text="Pasajero" />
+            <TableColumn fx:id="colEstado" prefWidth="120" text="Estado" />
         </columns>
         <columnResizePolicy>
             <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />

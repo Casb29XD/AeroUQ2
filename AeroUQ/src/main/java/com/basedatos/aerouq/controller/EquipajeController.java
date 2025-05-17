@@ -2,13 +2,14 @@ package com.basedatos.aerouq.controller;
 
 import com.basedatos.aerouq.model.Equipaje;
 import com.basedatos.aerouq.repository.DatabaseRepository;
+import com.basedatos.aerouq.config.DatabaseConfig;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 
 public class EquipajeController {
@@ -16,9 +17,8 @@ public class EquipajeController {
     @FXML private TextField txtBuscar;
     @FXML private TextField txtCodBarras;
     @FXML private TextField txtPeso;
-    @FXML private TextField txtIdVuelo;
-    @FXML private TextField txtIdPasajero;
-
+    @FXML private ComboBox<String> comboVuelo;
+    @FXML private ComboBox<String> comboPasajero;
     @FXML private ComboBox<String> comboEstado;
 
     @FXML private Button btnBuscar;
@@ -31,25 +31,36 @@ public class EquipajeController {
     @FXML private TableColumn<Equipaje, String> colIdMaleta;
     @FXML private TableColumn<Equipaje, String> colCodBarras;
     @FXML private TableColumn<Equipaje, String> colPeso;
-    @FXML private TableColumn<Equipaje, String> colIdVuelo;
-    @FXML private TableColumn<Equipaje, String> colIdPasajero;
+    @FXML private TableColumn<Equipaje, String> colVuelo;
+    @FXML private TableColumn<Equipaje, String> colPasajero;
     @FXML private TableColumn<Equipaje, String> colEstado;
 
     private final DatabaseRepository repository = new DatabaseRepository();
     private ObservableList<Equipaje> data = FXCollections.observableArrayList();
     private Equipaje equipajeSeleccionado = null;
 
+    private Map<String, Integer> vueloToId = new HashMap<>();
+    private Map<Integer, String> idToVuelo = new HashMap<>();
+    private Map<String, Integer> pasajeroToId = new HashMap<>();
+    private Map<Integer, String> idToPasajero = new HashMap<>();
+
     private static final List<String> ESTADOS = Arrays.asList("En tránsito", "Cargada", "Extraviada");
 
     @FXML
     private void initialize() {
         comboEstado.setItems(FXCollections.observableArrayList(ESTADOS));
+        cargarVuelosCombo();
+        cargarPasajerosCombo();
 
         colIdMaleta.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getIdMaleta())));
         colCodBarras.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getCodigoDeBarras()));
         colPeso.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getPeso())));
-        colIdVuelo.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getIdVuelo())));
-        colIdPasajero.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getIdPasajero())));
+        colVuelo.setCellValueFactory(cellData -> new SimpleStringProperty(
+                idToVuelo.getOrDefault(cellData.getValue().getIdVuelo(), String.valueOf(cellData.getValue().getIdVuelo()))
+        ));
+        colPasajero.setCellValueFactory(cellData -> new SimpleStringProperty(
+                idToPasajero.getOrDefault(cellData.getValue().getIdPasajero(), String.valueOf(cellData.getValue().getIdPasajero()))
+        ));
         colEstado.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEstado()));
 
         cargarTabla();
@@ -64,20 +75,57 @@ public class EquipajeController {
         );
     }
 
+    private void cargarVuelosCombo() {
+        comboVuelo.getItems().clear();
+        vueloToId.clear();
+        idToVuelo.clear();
+        try {
+            List<Map<String, Object>> vuelos = repository.buscar("Vuelos");
+            for (Map<String, Object> fila : vuelos) {
+                int idVuelo = ((Number) fila.get("ID_Vuelo")).intValue();
+                String numeroVuelo = (String) fila.get("NumeroVuelo");
+                vueloToId.put(numeroVuelo, idVuelo);
+                idToVuelo.put(idVuelo, numeroVuelo);
+                comboVuelo.getItems().add(numeroVuelo);
+            }
+        } catch (SQLException e) {
+            mostrarAlerta("Error", "No se pudieron cargar los vuelos:\n" + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    private void cargarPasajerosCombo() {
+        comboPasajero.getItems().clear();
+        pasajeroToId.clear();
+        idToPasajero.clear();
+        try {
+            List<Map<String, Object>> pasajeros = repository.buscar("Pasajeros");
+            for (Map<String, Object> fila : pasajeros) {
+                int idPasajero = ((Number) fila.get("ID_Pasajero")).intValue();
+                String nombreCompleto = fila.get("Nombre") + " " + fila.get("Apellido");
+                pasajeroToId.put(nombreCompleto, idPasajero);
+                idToPasajero.put(idPasajero, nombreCompleto);
+                comboPasajero.getItems().add(nombreCompleto);
+            }
+        } catch (SQLException e) {
+            mostrarAlerta("Error", "No se pudieron cargar los pasajeros:\n" + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
     private void cargarTabla() {
         data.clear();
-        try {
-            List<Map<String, Object>> resultados = repository.buscar("Equipajes");
-            for (Map<String, Object> fila : resultados) {
+        String sql = "SELECT e.ID_Maleta, e.CodigoDeBarras, e.Peso, e.ID_Vuelo, e.Estado, e.ID_Pasajero " +
+                "FROM Equipajes e";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
                 Equipaje equipaje = new Equipaje(
-                        ((Number) fila.get("ID_Maleta")).intValue(),
-                        (String) fila.get("CodigoDeBarras"),
-                        fila.get("Peso") instanceof Number
-                                ? ((Number) fila.get("Peso")).doubleValue()
-                                : Double.parseDouble(fila.get("Peso").toString()),
-                        ((Number) fila.get("ID_Vuelo")).intValue(),
-                        (String) fila.get("Estado"),
-                        ((Number) fila.get("ID_Pasajero")).intValue()
+                        rs.getInt("ID_Maleta"),
+                        rs.getString("CodigoDeBarras"),
+                        rs.getDouble("Peso"),
+                        rs.getInt("ID_Vuelo"),
+                        rs.getString("Estado"),
+                        rs.getInt("ID_Pasajero")
                 );
                 data.add(equipaje);
             }
@@ -90,41 +138,33 @@ public class EquipajeController {
     @FXML
     private void handleBuscarEquipaje() {
         String texto = txtBuscar.getText().trim();
-        if (texto.isEmpty()) {
-            mostrarAlerta("Buscar", "Ingrese el ID de la maleta o el código de barras.", Alert.AlertType.INFORMATION);
-            return;
-        }
-        try {
-            List<Map<String, Object>> resultados;
-            if (texto.matches("\\d+")) {
-                resultados = repository.buscar(
-                        "Equipajes",
-                        "ID_Maleta = ?",
-                        Collections.singletonList(Integer.valueOf(texto))
-                );
-            } else {
-                resultados = repository.buscar(
-                        "Equipajes",
-                        "CodigoDeBarras LIKE ?",
-                        Collections.singletonList("%" + texto + "%")
-                );
-            }
-            data.clear();
-            for (Map<String, Object> fila : resultados) {
-                Equipaje equipaje = new Equipaje(
-                        ((Number) fila.get("ID_Maleta")).intValue(),
-                        (String) fila.get("CodigoDeBarras"),
-                        fila.get("Peso") instanceof Number
-                                ? ((Number) fila.get("Peso")).doubleValue()
-                                : Double.parseDouble(fila.get("Peso").toString()),
-                        ((Number) fila.get("ID_Vuelo")).intValue(),
-                        (String) fila.get("Estado"),
-                        ((Number) fila.get("ID_Pasajero")).intValue()
-                );
-                data.add(equipaje);
+        String sql = "SELECT e.ID_Maleta, e.CodigoDeBarras, e.Peso, e.ID_Vuelo, e.Estado, e.ID_Pasajero " +
+                "FROM Equipajes e " +
+                "LEFT JOIN Vuelos v ON e.ID_Vuelo = v.ID_Vuelo " +
+                "LEFT JOIN Pasajeros p ON e.ID_Pasajero = p.ID_Pasajero " +
+                "WHERE e.CodigoDeBarras LIKE ? OR v.NumeroVuelo LIKE ? OR CONCAT(p.Nombre, ' ', p.Apellido) LIKE ?";
+        data.clear();
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            String like = "%" + texto + "%";
+            stmt.setString(1, like);
+            stmt.setString(2, like);
+            stmt.setString(3, like);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Equipaje equipaje = new Equipaje(
+                            rs.getInt("ID_Maleta"),
+                            rs.getString("CodigoDeBarras"),
+                            rs.getDouble("Peso"),
+                            rs.getInt("ID_Vuelo"),
+                            rs.getString("Estado"),
+                            rs.getInt("ID_Pasajero")
+                    );
+                    data.add(equipaje);
+                }
             }
             tableEquipaje.setItems(data);
-
             if (!data.isEmpty()) {
                 equipajeSeleccionado = data.get(0);
                 tableEquipaje.getSelectionModel().select(0);
@@ -150,8 +190,8 @@ public class EquipajeController {
     private void limpiarCampos() {
         txtCodBarras.clear();
         txtPeso.clear();
-        txtIdVuelo.clear();
-        txtIdPasajero.clear();
+        comboVuelo.getSelectionModel().clearSelection();
+        comboPasajero.getSelectionModel().clearSelection();
         comboEstado.getSelectionModel().clearSelection();
     }
 
@@ -159,8 +199,8 @@ public class EquipajeController {
         if (equipajeSeleccionado != null) {
             txtCodBarras.setText(equipajeSeleccionado.getCodigoDeBarras());
             txtPeso.setText(String.valueOf(equipajeSeleccionado.getPeso()));
-            txtIdVuelo.setText(String.valueOf(equipajeSeleccionado.getIdVuelo()));
-            txtIdPasajero.setText(String.valueOf(equipajeSeleccionado.getIdPasajero()));
+            comboVuelo.setValue(idToVuelo.get(equipajeSeleccionado.getIdVuelo()));
+            comboPasajero.setValue(idToPasajero.get(equipajeSeleccionado.getIdPasajero()));
             comboEstado.setValue(equipajeSeleccionado.getEstado());
         }
     }
@@ -169,19 +209,20 @@ public class EquipajeController {
     private void handleAddEquipaje() {
         String codBarras = txtCodBarras.getText().trim();
         String pesoStr = txtPeso.getText().trim();
-        String idVueloStr = txtIdVuelo.getText().trim();
-        String idPasajeroStr = txtIdPasajero.getText().trim();
+        String vueloNombre = comboVuelo.getValue();
+        String pasajeroNombre = comboPasajero.getValue();
         String estado = comboEstado.getValue();
 
-        if (codBarras.isEmpty() || pesoStr.isEmpty() || idVueloStr.isEmpty() || idPasajeroStr.isEmpty() || estado == null) {
+        Integer idVuelo = vueloToId.get(vueloNombre);
+        Integer idPasajero = pasajeroToId.get(pasajeroNombre);
+
+        if (codBarras.isEmpty() || pesoStr.isEmpty() || idVuelo == null || idPasajero == null || estado == null) {
             mostrarAlerta("Agregar", "Todos los campos son obligatorios.", Alert.AlertType.WARNING);
             return;
         }
 
         try {
             double peso = Double.parseDouble(pesoStr);
-            int idVuelo = Integer.parseInt(idVueloStr);
-            int idPasajero = Integer.parseInt(idPasajeroStr);
 
             Map<String, Object> datos = new HashMap<>();
             datos.put("CodigoDeBarras", codBarras);
@@ -198,7 +239,7 @@ public class EquipajeController {
                 equipajeSeleccionado = null;
             }
         } catch (NumberFormatException nfe) {
-            mostrarAlerta("Agregar", "Peso, ID Vuelo y ID Pasajero deben ser numéricos.", Alert.AlertType.WARNING);
+            mostrarAlerta("Agregar", "El peso debe ser numérico.", Alert.AlertType.WARNING);
         } catch (SQLException e) {
             if (e.getMessage().contains("UNIQUE")) {
                 mostrarAlerta("Error", "El código de barras ya existe.", Alert.AlertType.ERROR);
@@ -216,19 +257,20 @@ public class EquipajeController {
         }
         String codBarras = txtCodBarras.getText().trim();
         String pesoStr = txtPeso.getText().trim();
-        String idVueloStr = txtIdVuelo.getText().trim();
-        String idPasajeroStr = txtIdPasajero.getText().trim();
+        String vueloNombre = comboVuelo.getValue();
+        String pasajeroNombre = comboPasajero.getValue();
         String estado = comboEstado.getValue();
 
-        if (codBarras.isEmpty() || pesoStr.isEmpty() || idVueloStr.isEmpty() || idPasajeroStr.isEmpty() || estado == null) {
+        Integer idVuelo = vueloToId.get(vueloNombre);
+        Integer idPasajero = pasajeroToId.get(pasajeroNombre);
+
+        if (codBarras.isEmpty() || pesoStr.isEmpty() || idVuelo == null || idPasajero == null || estado == null) {
             mostrarAlerta("Editar", "Todos los campos son obligatorios.", Alert.AlertType.WARNING);
             return;
         }
 
         try {
             double peso = Double.parseDouble(pesoStr);
-            int idVuelo = Integer.parseInt(idVueloStr);
-            int idPasajero = Integer.parseInt(idPasajeroStr);
 
             Map<String, Object> datos = new HashMap<>();
             datos.put("CodigoDeBarras", codBarras);
@@ -250,7 +292,7 @@ public class EquipajeController {
                 equipajeSeleccionado = null;
             }
         } catch (NumberFormatException nfe) {
-            mostrarAlerta("Editar", "Peso, ID Vuelo y ID Pasajero deben ser numéricos.", Alert.AlertType.WARNING);
+            mostrarAlerta("Editar", "El peso debe ser numérico.", Alert.AlertType.WARNING);
         } catch (SQLException e) {
             if (e.getMessage().contains("UNIQUE")) {
                 mostrarAlerta("Error", "El código de barras ya existe.", Alert.AlertType.ERROR);

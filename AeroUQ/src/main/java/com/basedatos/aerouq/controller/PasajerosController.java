@@ -2,30 +2,28 @@ package com.basedatos.aerouq.controller;
 
 import com.basedatos.aerouq.model.Pasajero;
 import com.basedatos.aerouq.repository.DatabaseRepository;
+import com.basedatos.aerouq.config.DatabaseConfig;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 
 public class PasajerosController {
 
-    // Campos del formulario (sin ID, porque lo genera la BD)
     @FXML private TextField txtNombre;
     @FXML private TextField txtApellido;
     @FXML private TextField txtDocumentoIdentidad;
     @FXML private TextField txtNacionalidad;
-    @FXML private TextField txtIdVuelo;
+    @FXML private ComboBox<String> comboVuelo;
 
-    // Botones de acción
     @FXML private Button btnAdd;
     @FXML private Button btnEdit;
     @FXML private Button btnDelete;
 
-    // Tabla y columnas
     @FXML private TableView<Pasajero> tablePasajeros;
     @FXML private TableColumn<Pasajero, String> colIdPasajero;
     @FXML private TableColumn<Pasajero, String> colNombre;
@@ -39,6 +37,10 @@ public class PasajerosController {
 
     private Pasajero pasajeroSeleccionado = null;
 
+    // Mapas para asociar número de vuelo <-> ID
+    private Map<String, Integer> numeroVueloToId = new HashMap<>();
+    private Map<Integer, String> idToNumeroVuelo = new HashMap<>();
+
     @FXML
     private void initialize() {
         colIdPasajero.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getIdPasajero())));
@@ -46,8 +48,11 @@ public class PasajerosController {
         colApellido.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getApellido()));
         colDocumentoIdentidad.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDocumentoIdentidad()));
         colNacionalidad.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getNacionalidad()));
-        colIdVuelo.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getIdVuelo())));
+        colIdVuelo.setCellValueFactory(cellData -> new SimpleStringProperty(
+                idToNumeroVuelo.getOrDefault(cellData.getValue().getIdVuelo(), String.valueOf(cellData.getValue().getIdVuelo()))
+        ));
 
+        cargarVuelosCombo();
         cargarTabla();
 
         tablePasajeros.getSelectionModel().selectedItemProperty().addListener(
@@ -60,18 +65,44 @@ public class PasajerosController {
         );
     }
 
+    private void cargarVuelosCombo() {
+        comboVuelo.getItems().clear();
+        numeroVueloToId.clear();
+        idToNumeroVuelo.clear();
+        try {
+            List<Map<String, Object>> vuelos = repository.buscar("Vuelos");
+            for (Map<String, Object> fila : vuelos) {
+                int idVuelo = ((Number) fila.get("ID_Vuelo")).intValue();
+                String numeroVuelo = (String) fila.get("NumeroVuelo");
+                numeroVueloToId.put(numeroVuelo, idVuelo);
+                idToNumeroVuelo.put(idVuelo, numeroVuelo);
+                comboVuelo.getItems().add(numeroVuelo);
+            }
+        } catch (SQLException e) {
+            mostrarAlerta("Error", "No se pudieron cargar los vuelos:\n" + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
     private void cargarTabla() {
         data.clear();
-        try {
-            List<Map<String, Object>> resultados = repository.buscar("Pasajeros");
-            for (Map<String, Object> fila : resultados) {
+        String sql = "SELECT p.ID_Pasajero, p.Nombre, p.Apellido, p.DocumentoIdentidad, p.Nacionalidad, p.ID_Vuelo, v.NumeroVuelo " +
+                "FROM Pasajeros p LEFT JOIN Vuelos v ON p.ID_Vuelo = v.ID_Vuelo";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                int idVuelo = rs.getInt("ID_Vuelo");
+                String numeroVuelo = rs.getString("NumeroVuelo");
+                if (numeroVuelo != null) {
+                    idToNumeroVuelo.put(idVuelo, numeroVuelo);
+                }
                 Pasajero p = new Pasajero(
-                        (int) fila.get("ID_Pasajero"),
-                        (String) fila.get("Nombre"),
-                        (String) fila.get("Apellido"),
-                        (String) fila.get("DocumentoIdentidad"),
-                        (String) fila.get("Nacionalidad"),
-                        (int) fila.get("ID_Vuelo")
+                        rs.getInt("ID_Pasajero"),
+                        rs.getString("Nombre"),
+                        rs.getString("Apellido"),
+                        rs.getString("DocumentoIdentidad"),
+                        rs.getString("Nacionalidad"),
+                        idVuelo
                 );
                 data.add(p);
             }
@@ -88,7 +119,13 @@ public class PasajerosController {
             String apellido = txtApellido.getText().trim();
             String documento = txtDocumentoIdentidad.getText().trim();
             String nacionalidad = txtNacionalidad.getText().trim();
-            int idVuelo = Integer.parseInt(txtIdVuelo.getText().trim());
+            String numeroVuelo = comboVuelo.getValue();
+            Integer idVuelo = numeroVueloToId.get(numeroVuelo);
+
+            if (nombre.isEmpty() || apellido.isEmpty() || documento.isEmpty() || nacionalidad.isEmpty() || numeroVuelo == null || idVuelo == null) {
+                mostrarAlerta("Advertencia", "Todos los campos son obligatorios.", Alert.AlertType.WARNING);
+                return;
+            }
 
             Map<String, Object> datos = new HashMap<>();
             datos.put("Nombre", nombre);
@@ -104,8 +141,6 @@ public class PasajerosController {
                 limpiarCampos();
                 pasajeroSeleccionado = null;
             }
-        } catch (NumberFormatException e) {
-            mostrarAlerta("Advertencia", "ID Vuelo debe ser un número válido.", Alert.AlertType.WARNING);
         } catch (SQLException e) {
             mostrarAlerta("Error", "Error al agregar pasajero:\n" + e.getMessage(), Alert.AlertType.ERROR);
         }
@@ -122,7 +157,13 @@ public class PasajerosController {
             String apellido = txtApellido.getText().trim();
             String documento = txtDocumentoIdentidad.getText().trim();
             String nacionalidad = txtNacionalidad.getText().trim();
-            int idVuelo = Integer.parseInt(txtIdVuelo.getText().trim());
+            String numeroVuelo = comboVuelo.getValue();
+            Integer idVuelo = numeroVueloToId.get(numeroVuelo);
+
+            if (nombre.isEmpty() || apellido.isEmpty() || documento.isEmpty() || nacionalidad.isEmpty() || numeroVuelo == null || idVuelo == null) {
+                mostrarAlerta("Advertencia", "Todos los campos son obligatorios.", Alert.AlertType.WARNING);
+                return;
+            }
 
             Map<String, Object> datos = new HashMap<>();
             datos.put("Nombre", nombre);
@@ -143,8 +184,6 @@ public class PasajerosController {
                 limpiarCampos();
                 pasajeroSeleccionado = null;
             }
-        } catch (NumberFormatException e) {
-            mostrarAlerta("Advertencia", "ID Vuelo debe ser un número válido.", Alert.AlertType.WARNING);
         } catch (SQLException e) {
             mostrarAlerta("Error", "Error al actualizar pasajero:\n" + e.getMessage(), Alert.AlertType.ERROR);
         }
@@ -178,7 +217,7 @@ public class PasajerosController {
         txtApellido.clear();
         txtDocumentoIdentidad.clear();
         txtNacionalidad.clear();
-        txtIdVuelo.clear();
+        comboVuelo.getSelectionModel().clearSelection();
     }
 
     private void llenarCamposDesdeSeleccion() {
@@ -187,7 +226,7 @@ public class PasajerosController {
             txtApellido.setText(pasajeroSeleccionado.getApellido());
             txtDocumentoIdentidad.setText(pasajeroSeleccionado.getDocumentoIdentidad());
             txtNacionalidad.setText(pasajeroSeleccionado.getNacionalidad());
-            txtIdVuelo.setText(String.valueOf(pasajeroSeleccionado.getIdVuelo()));
+            comboVuelo.setValue(idToNumeroVuelo.get(pasajeroSeleccionado.getIdVuelo()));
         }
     }
 
