@@ -3,7 +3,7 @@ package com.basedatos.aerouq.model;
 public class MantenimientoAeronave {
     private int idMantenimiento;
     private int idAeronave;
-    private String matricula; // Matrícula legible
+    private String matricula;
     private String descripcion;
     private String fechaMantenimiento;
     private String estado;
@@ -24,6 +24,7 @@ public class MantenimientoAeronave {
     public String getFechaMantenimiento() { return fechaMantenimiento; }
     public String getEstado() { return estado; }
 
+    public void setIdMantenimiento(int idMantenimiento) { this.idMantenimiento = idMantenimiento; }
     public void setIdAeronave(int idAeronave) { this.idAeronave = idAeronave; }
     public void setMatricula(String matricula) { this.matricula = matricula; }
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }

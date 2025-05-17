@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
@@ -19,7 +20,6 @@
         <Insets bottom="20" left="20" right="20" top="20" />
     </padding>
 
-    <!-- Título con efecto de sombra -->
     <HBox alignment="CENTER" style="-fx-background-color: #2e8b57; -fx-background-radius: 10;">
         <padding>
             <Insets bottom="10" left="15" right="15" top="10" />
@@ -38,10 +38,8 @@
         </effect>
     </HBox>
 
-    <!-- Espacio después del título -->
     <HBox prefHeight="10.0" />
 
-    <!-- Barra de búsqueda -->
     <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 10;">
         <Label style="-fx-font-weight: bold;" text="Buscar Empleado:" />
         <TextField fx:id="txtBuscar" promptText="Ingrese ID o nombre de empleado" HBox.hgrow="ALWAYS" />
@@ -64,7 +62,6 @@
         </effect>
     </HBox>
 
-    <!-- Formulario para ingreso de datos -->
     <GridPane alignment="CENTER" hgap="15" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15;" vgap="15">
         <Label style="-fx-font-weight: bold;" text="Documento Identidad:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
         <TextField fx:id="txtDocumento" promptText="Documento Identidad" GridPane.columnIndex="1" GridPane.rowIndex="0" />
@@ -75,8 +72,8 @@
         <Label style="-fx-font-weight: bold;" text="Apellido:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
         <TextField fx:id="txtApellido" promptText="Apellido" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-        <Label style="-fx-font-weight: bold;" text="ID Cargo:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-        <TextField fx:id="txtIdCargo" promptText="Ej. 1" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+        <Label style="-fx-font-weight: bold;" text="Cargo:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+        <ComboBox fx:id="comboCargo" promptText="Seleccione cargo" GridPane.columnIndex="3" GridPane.rowIndex="1" />
 
         <columnConstraints>
             <ColumnConstraints />
@@ -90,47 +87,13 @@
         </rowConstraints>
     </GridPane>
 
-    <!-- Panel de botones -->
     <HBox alignment="CENTER" spacing="20" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15;">
         <padding>
             <Insets bottom="10" left="10" right="10" top="10" />
         </padding>
-        <Button fx:id="btnAdd" alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleAddEmpleado" style="-fx-background-color: #3cb371; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Agregar Empleado ➕">
-            <padding>
-                <Insets bottom="10" left="20" right="20" top="10" />
-            </padding>
-            <effect>
-                <DropShadow height="5.0" radius="2.0" width="5.0">
-                    <color>
-                        <Color opacity="0.3" />
-                    </color>
-                </DropShadow>
-            </effect>
-        </Button>
-        <Button fx:id="btnEdit" alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleEditEmpleado" style="-fx-background-color: #20b2aa; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Editar Empleado ✏">
-            <padding>
-                <Insets bottom="10" left="20" right="20" top="10" />
-            </padding>
-            <effect>
-                <DropShadow height="5.0" radius="2.0" width="5.0">
-                    <color>
-                        <Color opacity="0.3" />
-                    </color>
-                </DropShadow>
-            </effect>
-        </Button>
-        <Button fx:id="btnDelete" alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleDeleteEmpleado" style="-fx-background-color: #db5a42; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Eliminar Empleado ➖">
-            <padding>
-                <Insets bottom="10" left="20" right="20" top="10" />
-            </padding>
-            <effect>
-                <DropShadow height="5.0" radius="2.0" width="5.0">
-                    <color>
-                        <Color opacity="0.3" />
-                    </color>
-                </DropShadow>
-            </effect>
-        </Button>
+        <Button fx:id="btnAdd" alignment="CENTER" onAction="#handleAddEmpleado" style="-fx-background-color: #3cb371; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Agregar Empleado ➕"/>
+        <Button fx:id="btnEdit" alignment="CENTER" onAction="#handleEditEmpleado" style="-fx-background-color: #20b2aa; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Editar Empleado ✏"/>
+        <Button fx:id="btnDelete" alignment="CENTER" onAction="#handleDeleteEmpleado" style="-fx-background-color: #db5a42; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Eliminar Empleado ➖"/>
         <effect>
             <DropShadow>
                 <color>
@@ -140,14 +103,13 @@
         </effect>
     </HBox>
 
-    <!-- TableView redimensionable -->
     <TableView fx:id="tableEmpleado" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #a3d2a3;" VBox.vgrow="ALWAYS">
         <columns>
             <TableColumn fx:id="colIdEmpleado" prefWidth="100" style="-fx-alignment: CENTER;" text="ID Empleado" />
             <TableColumn fx:id="colDocumento" prefWidth="120.0" text="Documento Identidad" />
             <TableColumn fx:id="colNombre" prefWidth="150" text="Nombre Empleado" />
             <TableColumn fx:id="colApellido" prefWidth="150" text="Apellido Empleado" />
-            <TableColumn fx:id="colCargo" prefWidth="150" text="ID Cargo" />
+            <TableColumn fx:id="colCargo" prefWidth="150" text="Cargo" />
         </columns>
         <columnResizePolicy>
             <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />

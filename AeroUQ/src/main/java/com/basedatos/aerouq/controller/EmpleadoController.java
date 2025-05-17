@@ -2,32 +2,30 @@ package com.basedatos.aerouq.controller;
 
 import com.basedatos.aerouq.model.Empleado;
 import com.basedatos.aerouq.repository.DatabaseRepository;
+import com.basedatos.aerouq.config.DatabaseConfig;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 
 public class EmpleadoController {
 
-    // Campos de búsqueda y formulario
     @FXML private TextField txtBuscar;
     @FXML private TextField txtDocumento;
     @FXML private TextField txtNombre;
     @FXML private TextField txtApellido;
-    @FXML private TextField txtIdCargo;
+    @FXML private ComboBox<String> comboCargo;
 
-    // Botones
     @FXML private Button btnBuscar;
     @FXML private Button btnLimpiarBusqueda;
     @FXML private Button btnAdd;
     @FXML private Button btnEdit;
     @FXML private Button btnDelete;
 
-    // Tabla y columnas
     @FXML private TableView<Empleado> tableEmpleado;
     @FXML private TableColumn<Empleado, String> colIdEmpleado;
     @FXML private TableColumn<Empleado, String> colDocumento;
@@ -39,6 +37,8 @@ public class EmpleadoController {
     private ObservableList<Empleado> data = FXCollections.observableArrayList();
 
     private Empleado empleadoSeleccionado = null;
+    private Map<String, Integer> nombreCargoToId = new HashMap<>(); // <nombreCargo, idCargo>
+    private Map<Integer, String> idToNombreCargo = new HashMap<>(); // <idCargo, nombreCargo>
 
     @FXML
     private void initialize() {
@@ -46,8 +46,9 @@ public class EmpleadoController {
         colDocumento.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDocumento()));
         colNombre.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getNombre()));
         colApellido.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getApellido()));
-        colCargo.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getIdCargo())));
+        colCargo.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getNombreCargo()));
 
+        cargarCargosCombo();
         cargarTabla();
 
         tableEmpleado.getSelectionModel().selectedItemProperty().addListener(
@@ -60,26 +61,41 @@ public class EmpleadoController {
         );
     }
 
+    private void cargarCargosCombo() {
+        comboCargo.getItems().clear();
+        nombreCargoToId.clear();
+        idToNombreCargo.clear();
+        try {
+            List<Map<String, Object>> cargos = repository.buscar("Cargos");
+            for (Map<String, Object> fila : cargos) {
+                int idCargo = ((Number) fila.get("idCargo")).intValue();
+                String nombreCargo = (String) fila.get("nombreCargo");
+                nombreCargoToId.put(nombreCargo, idCargo);
+                idToNombreCargo.put(idCargo, nombreCargo);
+                comboCargo.getItems().add(nombreCargo);
+            }
+        } catch (SQLException e) {
+            mostrarAlerta("Error", "No se pudieron cargar los cargos:\n" + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
     private void cargarTabla() {
         data.clear();
-        try {
-            List<Map<String, Object>> resultados = repository.buscar("Empleados");
-            for (Map<String, Object> fila : resultados) {
-                // Usa los nombres exactos de tu BD:
-                int idEmpleado = fila.get("ID_Empleado") != null ? ((Number) fila.get("ID_Empleado")).intValue() : 0;
-                String documento = String.valueOf(fila.getOrDefault("DocumentoIdentidad", ""));
-                String nombre = String.valueOf(fila.getOrDefault("Nombre", ""));
-                String apellido = String.valueOf(fila.getOrDefault("Apellido", ""));
-                int idCargo = fila.get("idCargo") != null ? ((Number) fila.get("idCargo")).intValue() : 0;
-
-                Empleado e = new Empleado(
-                        idEmpleado,
-                        documento,
-                        nombre,
-                        apellido,
-                        idCargo
+        String sql = "SELECT e.ID_Empleado, e.DocumentoIdentidad, e.Nombre, e.Apellido, e.idCargo, c.nombreCargo " +
+                "FROM Empleados e JOIN Cargos c ON e.idCargo = c.idCargo";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Empleado emp = new Empleado(
+                        rs.getInt("ID_Empleado"),
+                        rs.getString("DocumentoIdentidad"),
+                        rs.getString("Nombre"),
+                        rs.getString("Apellido"),
+                        rs.getInt("idCargo"),
+                        rs.getString("nombreCargo")
                 );
-                data.add(e);
+                data.add(emp);
             }
             tableEmpleado.setItems(data);
         } catch (SQLException e) {
@@ -90,40 +106,46 @@ public class EmpleadoController {
     @FXML
     private void handleBuscarEmpleado() {
         String buscar = txtBuscar.getText().trim();
-        if (buscar.isEmpty()) {
-            mostrarAlerta("Buscar", "Ingrese el ID o nombre del empleado a buscar.", Alert.AlertType.INFORMATION);
-            return;
-        }
-        try {
-            List<Map<String, Object>> resultados;
+        String sql = "SELECT e.ID_Empleado, e.DocumentoIdentidad, e.Nombre, e.Apellido, e.idCargo, c.nombreCargo " +
+                "FROM Empleados e JOIN Cargos c ON e.idCargo = c.idCargo " +
+                "WHERE e.ID_Empleado = ? OR e.Nombre LIKE ? OR e.Apellido LIKE ? OR c.nombreCargo LIKE ?";
+        data.clear();
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             try {
                 int id = Integer.parseInt(buscar);
-                resultados = repository.buscar("Empleados", "ID_Empleado = ?", Collections.singletonList(id));
+                stmt.setInt(1, id);
             } catch (NumberFormatException e) {
-                resultados = repository.buscar("Empleados", "Nombre LIKE ?", Collections.singletonList("%" + buscar + "%"));
+                stmt.setInt(1, -1);
             }
-            if (resultados.isEmpty()) {
-                mostrarAlerta("Buscar", "No se encontró ningún empleado.", Alert.AlertType.INFORMATION);
-                return;
-            }
-            Map<String, Object> fila = resultados.get(0);
-            int idEmpleado = fila.get("ID_Empleado") != null ? ((Number) fila.get("ID_Empleado")).intValue() : 0;
-            String documento = String.valueOf(fila.getOrDefault("DocumentoIdentidad", ""));
-            String nombre = String.valueOf(fila.getOrDefault("Nombre", ""));
-            String apellido = String.valueOf(fila.getOrDefault("Apellido", ""));
-            int idCargo = fila.get("idCargo") != null ? ((Number) fila.get("idCargo")).intValue() : 0;
+            String like = "%" + buscar + "%";
+            stmt.setString(2, like);
+            stmt.setString(3, like);
+            stmt.setString(4, like);
 
-            Empleado emp = new Empleado(
-                    idEmpleado,
-                    documento,
-                    nombre,
-                    apellido,
-                    idCargo
-            );
-            empleadoSeleccionado = emp;
-            tableEmpleado.getSelectionModel().select(buscarEmpleadoEnTabla(emp.getIdEmpleado()));
-            llenarCamposDesdeSeleccion();
-        } catch (Exception e) {
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Empleado emp = new Empleado(
+                            rs.getInt("ID_Empleado"),
+                            rs.getString("DocumentoIdentidad"),
+                            rs.getString("Nombre"),
+                            rs.getString("Apellido"),
+                            rs.getInt("idCargo"),
+                            rs.getString("nombreCargo")
+                    );
+                    data.add(emp);
+                }
+            }
+            tableEmpleado.setItems(data);
+            if (!data.isEmpty()) {
+                empleadoSeleccionado = data.get(0);
+                tableEmpleado.getSelectionModel().select(0);
+                llenarCamposDesdeSeleccion();
+            } else {
+                limpiarCampos();
+                mostrarAlerta("Buscar", "No se encontró ningún empleado.", Alert.AlertType.INFORMATION);
+            }
+        } catch (SQLException e) {
             mostrarAlerta("Error", "Error al buscar empleado:\n" + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
@@ -133,6 +155,7 @@ public class EmpleadoController {
         txtBuscar.clear();
         limpiarCampos();
         tableEmpleado.getSelectionModel().clearSelection();
+        cargarTabla();
         empleadoSeleccionado = null;
     }
 
@@ -140,7 +163,7 @@ public class EmpleadoController {
         txtDocumento.clear();
         txtNombre.clear();
         txtApellido.clear();
-        txtIdCargo.clear();
+        comboCargo.getSelectionModel().clearSelection();
     }
 
     private void llenarCamposDesdeSeleccion() {
@@ -148,7 +171,8 @@ public class EmpleadoController {
             txtDocumento.setText(empleadoSeleccionado.getDocumento());
             txtNombre.setText(empleadoSeleccionado.getNombre());
             txtApellido.setText(empleadoSeleccionado.getApellido());
-            txtIdCargo.setText(String.valueOf(empleadoSeleccionado.getIdCargo()));
+            // Selecciona el nombre del cargo correspondiente en el combo
+            comboCargo.setValue(empleadoSeleccionado.getNombreCargo());
         }
     }
 
@@ -158,7 +182,13 @@ public class EmpleadoController {
             String documento = txtDocumento.getText().trim();
             String nombre = txtNombre.getText().trim();
             String apellido = txtApellido.getText().trim();
-            int idCargo = Integer.parseInt(txtIdCargo.getText().trim());
+            String nombreCargo = comboCargo.getValue();
+            Integer idCargo = nombreCargoToId.get(nombreCargo);
+
+            if (documento.isEmpty() || nombre.isEmpty() || apellido.isEmpty() || nombreCargo == null || idCargo == null) {
+                mostrarAlerta("Agregar", "Todos los campos son obligatorios.", Alert.AlertType.WARNING);
+                return;
+            }
 
             Map<String, Object> datos = new HashMap<>();
             datos.put("DocumentoIdentidad", documento);
@@ -173,8 +203,6 @@ public class EmpleadoController {
                 limpiarCampos();
                 empleadoSeleccionado = null;
             }
-        } catch (NumberFormatException e) {
-            mostrarAlerta("Advertencia", "ID Cargo debe ser un número válido.", Alert.AlertType.WARNING);
         } catch (SQLException e) {
             mostrarAlerta("Error", "Error al agregar empleado:\n" + e.getMessage(), Alert.AlertType.ERROR);
         }
@@ -190,7 +218,13 @@ public class EmpleadoController {
             String documento = txtDocumento.getText().trim();
             String nombre = txtNombre.getText().trim();
             String apellido = txtApellido.getText().trim();
-            int idCargo = Integer.parseInt(txtIdCargo.getText().trim());
+            String nombreCargo = comboCargo.getValue();
+            Integer idCargo = nombreCargoToId.get(nombreCargo);
+
+            if (documento.isEmpty() || nombre.isEmpty() || apellido.isEmpty() || nombreCargo == null || idCargo == null) {
+                mostrarAlerta("Editar", "Todos los campos son obligatorios.", Alert.AlertType.WARNING);
+                return;
+            }
 
             Map<String, Object> datos = new HashMap<>();
             datos.put("DocumentoIdentidad", documento);
@@ -210,8 +244,6 @@ public class EmpleadoController {
                 limpiarCampos();
                 empleadoSeleccionado = null;
             }
-        } catch (NumberFormatException e) {
-            mostrarAlerta("Advertencia", "ID Cargo debe ser un número válido.", Alert.AlertType.WARNING);
         } catch (SQLException e) {
             mostrarAlerta("Error", "Error al actualizar empleado:\n" + e.getMessage(), Alert.AlertType.ERROR);
         }
@@ -238,13 +270,6 @@ public class EmpleadoController {
         } catch (SQLException e) {
             mostrarAlerta("Error", "Error al eliminar empleado:\n" + e.getMessage(), Alert.AlertType.ERROR);
         }
-    }
-
-    private Empleado buscarEmpleadoEnTabla(int idEmpleado) {
-        for (Empleado e : data) {
-            if (e.getIdEmpleado() == idEmpleado) return e;
-        }
-        return null;
     }
 
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {

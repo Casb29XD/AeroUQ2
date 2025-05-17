@@ -13,8 +13,8 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.paint.Color?>
 <?import javafx.collections.FXCollections?>
-
 <?import java.lang.String?>
+
 <VBox prefHeight="500.0" prefWidth="800.0" spacing="15"
       style="-fx-background-color: linear-gradient(to bottom, #e6f5e9, #d4ebd7);"
       xmlns="http://javafx.com/javafx/23.0.1"
