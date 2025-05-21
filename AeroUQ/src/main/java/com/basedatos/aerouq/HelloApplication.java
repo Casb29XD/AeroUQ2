@@ -13,7 +13,7 @@ public class HelloApplication extends Application {
     public void start(Stage primaryStage) {
         try {
             // Cargar el archivo FXML del dashboard
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/basedatos/aerouq/dashboard.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/basedatos/aerouq/login.fxml"));
             Parent root = loader.load();
 
             // Configurar la escena principal
