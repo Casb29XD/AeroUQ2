@@ -3,6 +3,12 @@ package com.basedatos.aerouq.controller;
 import com.basedatos.aerouq.model.Empleado;
 import com.basedatos.aerouq.repository.DatabaseRepository;
 import com.basedatos.aerouq.config.DatabaseConfig;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -11,6 +17,10 @@ import javafx.scene.control.*;
 
 import java.sql.*;
 import java.util.*;
+import java.io.OutputStream;
+import java.io.FileOutputStream;
+import java.io.File;
+
 
 public class EmpleadoController {
 
@@ -25,6 +35,7 @@ public class EmpleadoController {
     @FXML private Button btnAdd;
     @FXML private Button btnEdit;
     @FXML private Button btnDelete;
+    @FXML private Button btnReporte;
 
     @FXML private TableView<Empleado> tableEmpleado;
     @FXML private TableColumn<Empleado, String> colIdEmpleado;
@@ -105,7 +116,6 @@ public class EmpleadoController {
         }
     }
 
-    // Filtra la tabla según el cargo seleccionado en el ComboBox
     @FXML
     private void handleCargoSeleccionado() {
         String cargoSeleccionado = comboCargo.getValue();
@@ -310,6 +320,97 @@ public class EmpleadoController {
             }
         } catch (SQLException e) {
             mostrarAlerta("Error", "Error al eliminar empleado:\n" + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    private void handleReporteCargo() {
+        String cargoSeleccionado = comboCargo.getValue();
+        if (cargoSeleccionado == null || cargoSeleccionado.isEmpty()) {
+            mostrarAlerta("Reporte PDF", "Seleccione un cargo para generar el reporte.", Alert.AlertType.WARNING);
+            return;
+        }
+        Integer idCargo = nombreCargoToId.get(cargoSeleccionado);
+        if (idCargo == null) {
+            mostrarAlerta("Reporte PDF", "Cargo no válido.", Alert.AlertType.WARNING);
+            return;
+        }
+
+        // Consultar empleados del cargo seleccionado
+        ObservableList<Empleado> empleadosCargo = FXCollections.observableArrayList();
+        String sql = "SELECT e.ID_Empleado, e.DocumentoIdentidad, e.Nombre, e.Apellido, e.idCargo, c.nombreCargo " +
+                "FROM Empleados e JOIN Cargos c ON e.idCargo = c.idCargo WHERE e.idCargo = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idCargo);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Empleado emp = new Empleado(
+                            rs.getInt("ID_Empleado"),
+                            rs.getString("DocumentoIdentidad"),
+                            rs.getString("Nombre"),
+                            rs.getString("Apellido"),
+                            rs.getInt("idCargo"),
+                            rs.getString("nombreCargo")
+                    );
+                    empleadosCargo.add(emp);
+                }
+            }
+        } catch (SQLException e) {
+            mostrarAlerta("Error", "No se pudo consultar empleados: " + e.getMessage(), Alert.AlertType.ERROR);
+            return;
+        }
+
+        if (empleadosCargo.isEmpty()) {
+            mostrarAlerta("Reporte PDF", "No hay empleados para el cargo seleccionado.", Alert.AlertType.INFORMATION);
+            return;
+        }
+
+        // Guardar en la raíz del proyecto
+        String fileName = "ReporteEmpleados_" + cargoSeleccionado.replaceAll("\\s+", "_") + ".pdf";
+        File pdfFile = new File(fileName);
+
+        // Generar el PDF
+        try (OutputStream out = new FileOutputStream(pdfFile)) {
+            Document document = new Document();
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // Título
+            Paragraph title = new Paragraph("Reporte de Empleados por Cargo", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18));
+            title.setAlignment(Element.ALIGN_CENTER);
+            document.add(title);
+
+            document.add(new Paragraph("Cargo: " + cargoSeleccionado, FontFactory.getFont(FontFactory.HELVETICA, 14)));
+            document.add(new Paragraph("Fecha: " + java.time.LocalDate.now()));
+            document.add(new Paragraph(" ")); // espacio
+
+            // Tabla
+            PdfPTable table = new PdfPTable(4);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{2.5f, 3f, 3f, 3f});
+            table.addCell("Documento");
+            table.addCell("Nombre");
+            table.addCell("Apellido");
+            table.addCell("ID Empleado");
+
+            for (Empleado emp : empleadosCargo) {
+                table.addCell(emp.getDocumento());
+                table.addCell(emp.getNombre());
+                table.addCell(emp.getApellido());
+                table.addCell(String.valueOf(emp.getIdEmpleado()));
+            }
+            document.add(table);
+
+            document.close();
+            mostrarAlerta("Éxito", "Reporte PDF generado correctamente en la raíz del proyecto.", Alert.AlertType.INFORMATION);
+
+            // Abrir el PDF generado
+            if (java.awt.Desktop.isDesktopSupported()) {
+                java.awt.Desktop.getDesktop().open(pdfFile);
+            }
+        } catch (Exception ex) {
+            mostrarAlerta("Error", "No se pudo generar o abrir el PDF: " + ex.getMessage(), Alert.AlertType.ERROR);
         }
     }
 

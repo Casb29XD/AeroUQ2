@@ -94,6 +94,9 @@
         <Button fx:id="btnAdd" alignment="CENTER" onAction="#handleAddEmpleado" style="-fx-background-color: #3cb371; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Agregar Empleado ➕"/>
         <Button fx:id="btnEdit" alignment="CENTER" onAction="#handleEditEmpleado" style="-fx-background-color: #20b2aa; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Editar Empleado ✏"/>
         <Button fx:id="btnDelete" alignment="CENTER" onAction="#handleDeleteEmpleado" style="-fx-background-color: #db5a42; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Eliminar Empleado ➖"/>
+        <Button fx:id="btnReporte" alignment="CENTER" onAction="#handleReporteCargo"
+                style="-fx-background-color: #4682b4; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;"
+                text="Reporte PDF 📝"/>
         <effect>
             <DropShadow>
                 <color>
