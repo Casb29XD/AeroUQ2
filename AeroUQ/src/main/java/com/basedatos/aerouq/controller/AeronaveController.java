@@ -57,6 +57,16 @@ public class AeronaveController {
                     }
                 }
         );
+
+        // Listener SOLO para filtrar la tabla al seleccionar una aerolínea
+        comboAerolinea.setOnAction(event -> {
+            String aerolinea = comboAerolinea.getValue();
+            if (aerolinea == null || aerolinea.isEmpty()) {
+                cargarTabla();
+            } else {
+                filtrarPorAerolinea(aerolinea);
+            }
+        });
     }
 
     private void cargarAerolineasCombo() {
@@ -93,6 +103,35 @@ public class AeronaveController {
                         rs.getString("Nombre")
                 );
                 data.add(aero);
+            }
+            tableAeronave.setItems(data);
+        } catch (SQLException e) {
+            mostrarAlerta("Error", "No se pudieron cargar las aeronaves:\n" + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    private void filtrarPorAerolinea(String nombreAerolinea) {
+        Integer idAerolinea = nombreAerolineaToId.get(nombreAerolinea);
+        if (idAerolinea == null) return;
+
+        data.clear();
+        String sql = "SELECT a.ID_Aeronave, a.ID_Aerolinea, a.Modelo, a.Matricula, al.Nombre " +
+                "FROM Aeronaves a JOIN Aerolineas al ON a.ID_Aerolinea = al.ID_Aerolinea " +
+                "WHERE a.ID_Aerolinea = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idAerolinea);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Aeronave aero = new Aeronave(
+                            rs.getInt("ID_Aeronave"),
+                            rs.getInt("ID_Aerolinea"),
+                            rs.getString("Modelo"),
+                            rs.getString("Matricula"),
+                            rs.getString("Nombre")
+                    );
+                    data.add(aero);
+                }
             }
             tableAeronave.setItems(data);
         } catch (SQLException e) {
@@ -146,6 +185,7 @@ public class AeronaveController {
         txtBuscar.clear();
         limpiarCampos();
         tableAeronave.getSelectionModel().clearSelection();
+        comboAerolinea.getSelectionModel().clearSelection(); // Limpia selección ComboBox
         cargarTabla();
         aeronaveSeleccionada = null;
     }
