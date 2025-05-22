@@ -20,13 +20,13 @@ public class HelloApplication extends Application {
             Scene scene = new Scene(root);
 
             // Configurar el título y mostrar la ventana principal
-            primaryStage.setTitle("AerUQ Dashboard");
+            primaryStage.setTitle("AerUQ");
             primaryStage.setScene(scene);
             primaryStage.setMaximized(true); // Maximizar la ventana al inicio
             primaryStage.show();
         } catch (IOException e) {
             e.printStackTrace();
-            System.err.println("Error al cargar el archivo dashboard.fxml");
+            System.err.println("Error al cargar el archivo Login.fxml");
         }
     }
 

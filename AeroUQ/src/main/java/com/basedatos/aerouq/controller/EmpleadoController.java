@@ -37,8 +37,8 @@ public class EmpleadoController {
     private ObservableList<Empleado> data = FXCollections.observableArrayList();
 
     private Empleado empleadoSeleccionado = null;
-    private Map<String, Integer> nombreCargoToId = new HashMap<>(); // <nombreCargo, idCargo>
-    private Map<Integer, String> idToNombreCargo = new HashMap<>(); // <idCargo, nombreCargo>
+    private Map<String, Integer> nombreCargoToId = new HashMap<>();
+    private Map<Integer, String> idToNombreCargo = new HashMap<>();
 
     @FXML
     private void initialize() {
@@ -50,6 +50,8 @@ public class EmpleadoController {
 
         cargarCargosCombo();
         cargarTabla();
+
+        comboCargo.setOnAction(event -> handleCargoSeleccionado());
 
         tableEmpleado.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldSelection, newSelection) -> {
@@ -100,6 +102,45 @@ public class EmpleadoController {
             tableEmpleado.setItems(data);
         } catch (SQLException e) {
             mostrarAlerta("Error", "No se pudieron cargar los empleados:\n" + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    // Filtra la tabla según el cargo seleccionado en el ComboBox
+    @FXML
+    private void handleCargoSeleccionado() {
+        String cargoSeleccionado = comboCargo.getValue();
+        if (cargoSeleccionado == null || cargoSeleccionado.isEmpty()) {
+            cargarTabla();
+            return;
+        }
+        Integer idCargo = nombreCargoToId.get(cargoSeleccionado);
+        if (idCargo == null) {
+            cargarTabla();
+            return;
+        }
+        data.clear();
+        String sql = "SELECT e.ID_Empleado, e.DocumentoIdentidad, e.Nombre, e.Apellido, e.idCargo, c.nombreCargo " +
+                "FROM Empleados e JOIN Cargos c ON e.idCargo = c.idCargo " +
+                "WHERE e.idCargo = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idCargo);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Empleado emp = new Empleado(
+                            rs.getInt("ID_Empleado"),
+                            rs.getString("DocumentoIdentidad"),
+                            rs.getString("Nombre"),
+                            rs.getString("Apellido"),
+                            rs.getInt("idCargo"),
+                            rs.getString("nombreCargo")
+                    );
+                    data.add(emp);
+                }
+            }
+            tableEmpleado.setItems(data);
+        } catch (SQLException e) {
+            mostrarAlerta("Error", "No se pudieron filtrar por cargo:\n" + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
@@ -154,6 +195,7 @@ public class EmpleadoController {
     private void handleLimpiarBusqueda() {
         txtBuscar.clear();
         limpiarCampos();
+        comboCargo.getSelectionModel().clearSelection();
         tableEmpleado.getSelectionModel().clearSelection();
         cargarTabla();
         empleadoSeleccionado = null;
@@ -171,7 +213,6 @@ public class EmpleadoController {
             txtDocumento.setText(empleadoSeleccionado.getDocumento());
             txtNombre.setText(empleadoSeleccionado.getNombre());
             txtApellido.setText(empleadoSeleccionado.getApellido());
-            // Selecciona el nombre del cargo correspondiente en el combo
             comboCargo.setValue(empleadoSeleccionado.getNombreCargo());
         }
     }

@@ -11,6 +11,15 @@ import javafx.scene.control.*;
 import java.sql.SQLException;
 import java.util.*;
 
+import com.itextpdf.text.Document;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import java.io.FileOutputStream;
+import java.io.File;
+import java.awt.Desktop;
+
 public class AerolineaController {
 
     @FXML private TextField txtNombre;
@@ -22,6 +31,7 @@ public class AerolineaController {
     @FXML private Button btnAdd;
     @FXML private Button btnEdit;
     @FXML private Button btnDelete;
+    @FXML private Button btnReporte;
 
     @FXML private TableView<Aerolinea> tableAerolineas;
     @FXML private TableColumn<Aerolinea, String> colIdAerolínea;
@@ -105,6 +115,7 @@ public class AerolineaController {
         txtBuscar.clear();
         limpiarCampos();
         tableAerolineas.getSelectionModel().clearSelection();
+        cargarTabla();
         aerolineaSeleccionada = null;
     }
 
@@ -211,6 +222,90 @@ public class AerolineaController {
             if (a.getIdAerolinea() == idAerolinea) return a;
         }
         return null;
+    }
+
+    // REPORTE PDF (con estado de mantenimiento "Excelente" si no existe en MantenimientoAeronaves)
+    @FXML
+    private void handleGenerarReporte() {
+        String nombreBuscado = txtNombre.getText().trim();
+        if (nombreBuscado.isEmpty()) {
+            mostrarAlerta("Reporte", "Debe ingresar el nombre de la aerolínea en el campo Nombre.", Alert.AlertType.WARNING);
+            return;
+        }
+        try {
+            // Buscar Aerolínea
+            List<Map<String, Object>> resAero = repository.buscar("Aerolineas", "Nombre = ?", Collections.singletonList(nombreBuscado));
+            if (resAero.isEmpty()) {
+                mostrarAlerta("Reporte", "No se encontró ninguna aerolínea con ese nombre.", Alert.AlertType.INFORMATION);
+                return;
+            }
+            Map<String, Object> aeroFila = resAero.get(0);
+            int idAerolinea = (int) aeroFila.get("ID_Aerolinea");
+            String nombre = (String) aeroFila.get("Nombre");
+            int flota = (int) aeroFila.get("Flota");
+            String contacto = (String) aeroFila.get("Contacto");
+
+            // Buscar aeronaves de la aerolínea
+            List<Map<String, Object>> aeronaves = repository.buscar("Aeronaves", "ID_Aerolinea = ?", Collections.singletonList(idAerolinea));
+
+            // Guardar estados de mantenimiento por aeronave (ID_Aeronave -> Estado), tabla: MantenimientoAeronaves
+            Map<Integer, String> estadoMantenimiento = new HashMap<>();
+            List<Map<String, Object>> mantenimientos = repository.buscar("MantenimientoAeronaves");
+            for (Map<String, Object> mant : mantenimientos) {
+                Object idAeronaveObj = mant.get("ID_Aeronave");
+                Object estadoObj = mant.get("Estado");
+                if (idAeronaveObj != null && estadoObj != null) {
+                    estadoMantenimiento.put(
+                            ((Number) idAeronaveObj).intValue(),
+                            estadoObj.toString()
+                    );
+                }
+            }
+
+            // Generar PDF
+            Document document = new Document();
+            String filename = "Reporte_Aerolinea_" + nombre.replaceAll(" ", "_") + "_" + System.currentTimeMillis() + ".pdf";
+            PdfWriter.getInstance(document, new FileOutputStream(filename));
+            document.open();
+
+            document.add(new Paragraph("Reporte de Aerolínea", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph(" "));
+            document.add(new Paragraph("Nombre: " + nombre, FontFactory.getFont(FontFactory.HELVETICA, 14)));
+            document.add(new Paragraph("Flota: " + flota, FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph("Contacto: " + contacto, FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+
+            document.add(new Paragraph("Aeronaves:", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14)));
+            document.add(new Paragraph(" "));
+
+            PdfPTable table = new PdfPTable(4);
+            table.addCell("ID Aeronave");
+            table.addCell("Modelo");
+            table.addCell("Matrícula");
+            table.addCell("Estado");
+
+            for (Map<String, Object> a : aeronaves) {
+                int idAeronave = ((Number)a.get("ID_Aeronave")).intValue();
+                table.addCell(String.valueOf(idAeronave));
+                table.addCell(a.get("Modelo") != null ? a.get("Modelo").toString() : "");
+                table.addCell(a.get("Matricula") != null ? a.get("Matricula").toString() : "");
+                // Estado: de MantenimientoAeronaves o "Excelente"
+                String estado = estadoMantenimiento.getOrDefault(idAeronave, "Excelente");
+                table.addCell(estado);
+            }
+            document.add(table);
+            document.close();
+
+            // Abrir PDF automáticamente
+            File pdfFile = new File(filename);
+            if (pdfFile.exists() && Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(pdfFile);
+            }
+
+            mostrarAlerta("Reporte", "Reporte generado exitosamente: " + filename, Alert.AlertType.INFORMATION);
+        } catch (Exception ex) {
+            mostrarAlerta("Error", "No se pudo generar el PDF: " + ex.getMessage(), Alert.AlertType.ERROR);
+        }
     }
 
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {

@@ -7,7 +7,9 @@ module com.basedatos.aerouq {
     requires org.controlsfx.controls; // Para controles avanzados de JavaFX
     requires com.dlsc.formsfx;        // Para formularios JavaFX
     requires org.kordamp.bootstrapfx.core; // Para estilos Bootstrap en JavaFX
-    requires java.sql;               // Para conexiones a bases de datos
+    requires java.sql;
+    requires itextpdf;
+    requires java.desktop;               // Para conexiones a bases de datos
 
     // Abre paquetes para ser accesibles por el cargador FXML
     opens com.basedatos.aerouq to javafx.fxml;

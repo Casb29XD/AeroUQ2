@@ -124,6 +124,18 @@
                 </DropShadow>
             </effect>
         </Button>
+        <Button fx:id="btnReporte" alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleGenerarReporte" style="-fx-background-color: #ffb347; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="📄 Reporte">
+            <padding>
+                <Insets bottom="10" left="20" right="20" top="10" />
+            </padding>
+            <effect>
+                <DropShadow height="5.0" radius="2.0" width="5.0">
+                    <color>
+                        <Color opacity="0.3" />
+                    </color>
+                </DropShadow>
+            </effect>
+        </Button>
         <effect>
             <DropShadow>
                 <color>

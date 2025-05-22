@@ -11,6 +11,17 @@ import javafx.scene.control.*;
 
 import java.sql.*;
 import java.util.*;
+import java.util.List;
+
+// PDF
+import com.itextpdf.text.Document;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import java.io.FileOutputStream;
+import java.io.File;
+import java.awt.Desktop;
 
 public class EquipajeController {
 
@@ -26,6 +37,7 @@ public class EquipajeController {
     @FXML private Button btnAdd;
     @FXML private Button btnEdit;
     @FXML private Button btnDelete;
+    @FXML private Button btnReporte;
 
     @FXML private TableView<Equipaje> tableEquipaje;
     @FXML private TableColumn<Equipaje, String> colIdMaleta;
@@ -50,7 +62,6 @@ public class EquipajeController {
     private void initialize() {
         comboEstado.setItems(FXCollections.observableArrayList(ESTADOS));
         cargarVuelosCombo();
-        cargarPasajerosCombo();
 
         colIdMaleta.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getIdMaleta())));
         colCodBarras.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getCodigoDeBarras()));
@@ -64,7 +75,6 @@ public class EquipajeController {
         colEstado.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEstado()));
 
         cargarTabla();
-
         tableEquipaje.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldSelection, newSelection) -> {
                     if (newSelection != null) {
@@ -75,6 +85,7 @@ public class EquipajeController {
         );
     }
 
+    // Carga vuelos y actualiza el mapa y ComboBox
     private void cargarVuelosCombo() {
         comboVuelo.getItems().clear();
         vueloToId.clear();
@@ -88,17 +99,21 @@ public class EquipajeController {
                 idToVuelo.put(idVuelo, numeroVuelo);
                 comboVuelo.getItems().add(numeroVuelo);
             }
+            comboVuelo.setValue(null);
+            comboPasajero.getItems().clear();
         } catch (SQLException e) {
             mostrarAlerta("Error", "No se pudieron cargar los vuelos:\n" + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
-    private void cargarPasajerosCombo() {
+    // Carga pasajeros SOLO del vuelo seleccionado
+    private void cargarPasajerosComboPorVuelo(Integer idVuelo) {
         comboPasajero.getItems().clear();
         pasajeroToId.clear();
         idToPasajero.clear();
+        if (idVuelo == null) return;
         try {
-            List<Map<String, Object>> pasajeros = repository.buscar("Pasajeros");
+            List<Map<String, Object>> pasajeros = repository.buscar("Pasajeros", "ID_Vuelo = ?", Collections.singletonList(idVuelo));
             for (Map<String, Object> fila : pasajeros) {
                 int idPasajero = ((Number) fila.get("ID_Pasajero")).intValue();
                 String nombreCompleto = fila.get("Nombre") + " " + fila.get("Apellido");
@@ -111,6 +126,64 @@ public class EquipajeController {
         }
     }
 
+    // Se activa al seleccionar vuelo
+    @FXML
+    private void handleVueloSeleccionado() {
+        String vueloSel = comboVuelo.getValue();
+        Integer idVuelo = vueloToId.get(vueloSel);
+        cargarPasajerosComboPorVuelo(idVuelo);
+        comboPasajero.getSelectionModel().clearSelection();
+        filtrarTabla();
+    }
+
+    // Se activa al seleccionar pasajero
+    @FXML
+    private void handlePasajeroSeleccionado() {
+        filtrarTabla();
+    }
+
+    // Filtra tabla según vuelo y/o pasajero
+    private void filtrarTabla() {
+        String vueloSel = comboVuelo.getValue();
+        String pasajeroSel = comboPasajero.getValue();
+        Integer idVuelo = vueloToId.get(vueloSel);
+        Integer idPasajero = pasajeroToId.get(pasajeroSel);
+        data.clear();
+        String sql = "SELECT e.ID_Maleta, e.CodigoDeBarras, e.Peso, e.ID_Vuelo, e.Estado, e.ID_Pasajero " +
+                "FROM Equipajes e WHERE 1=1";
+        List<Object> params = new ArrayList<>();
+        if (idVuelo != null) {
+            sql += " AND e.ID_Vuelo = ?";
+            params.add(idVuelo);
+        }
+        if (idPasajero != null) {
+            sql += " AND e.ID_Pasajero = ?";
+            params.add(idPasajero);
+        }
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i+1, params.get(i));
+            }
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Equipaje equipaje = new Equipaje(
+                        rs.getInt("ID_Maleta"),
+                        rs.getString("CodigoDeBarras"),
+                        rs.getDouble("Peso"),
+                        rs.getInt("ID_Vuelo"),
+                        rs.getString("Estado"),
+                        rs.getInt("ID_Pasajero")
+                );
+                data.add(equipaje);
+            }
+            tableEquipaje.setItems(data);
+        } catch (SQLException e) {
+            mostrarAlerta("Error", "No se pudieron filtrar los equipajes:\n" + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    // Carga todos los equipajes (para "limpiar")
     private void cargarTabla() {
         data.clear();
         String sql = "SELECT e.ID_Maleta, e.CodigoDeBarras, e.Peso, e.ID_Vuelo, e.Estado, e.ID_Pasajero " +
@@ -136,77 +209,7 @@ public class EquipajeController {
     }
 
     @FXML
-    private void handleBuscarEquipaje() {
-        String texto = txtBuscar.getText().trim();
-        String sql = "SELECT e.ID_Maleta, e.CodigoDeBarras, e.Peso, e.ID_Vuelo, e.Estado, e.ID_Pasajero " +
-                "FROM Equipajes e " +
-                "LEFT JOIN Vuelos v ON e.ID_Vuelo = v.ID_Vuelo " +
-                "LEFT JOIN Pasajeros p ON e.ID_Pasajero = p.ID_Pasajero " +
-                "WHERE e.CodigoDeBarras LIKE ? OR v.NumeroVuelo LIKE ? OR CONCAT(p.Nombre, ' ', p.Apellido) LIKE ?";
-        data.clear();
-        try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            String like = "%" + texto + "%";
-            stmt.setString(1, like);
-            stmt.setString(2, like);
-            stmt.setString(3, like);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Equipaje equipaje = new Equipaje(
-                            rs.getInt("ID_Maleta"),
-                            rs.getString("CodigoDeBarras"),
-                            rs.getDouble("Peso"),
-                            rs.getInt("ID_Vuelo"),
-                            rs.getString("Estado"),
-                            rs.getInt("ID_Pasajero")
-                    );
-                    data.add(equipaje);
-                }
-            }
-            tableEquipaje.setItems(data);
-            if (!data.isEmpty()) {
-                equipajeSeleccionado = data.get(0);
-                tableEquipaje.getSelectionModel().select(0);
-                llenarCamposDesdeSeleccion();
-            } else {
-                limpiarCampos();
-                mostrarAlerta("Buscar", "No se encontraron equipajes con ese criterio.", Alert.AlertType.INFORMATION);
-            }
-        } catch (SQLException e) {
-            mostrarAlerta("Error", "Error al buscar equipaje:\n" + e.getMessage(), Alert.AlertType.ERROR);
-        }
-    }
-
-    @FXML
-    private void handleLimpiarBusqueda() {
-        txtBuscar.clear();
-        limpiarCampos();
-        tableEquipaje.getSelectionModel().clearSelection();
-        cargarTabla();
-        equipajeSeleccionado = null;
-    }
-
-    private void limpiarCampos() {
-        txtCodBarras.clear();
-        txtPeso.clear();
-        comboVuelo.getSelectionModel().clearSelection();
-        comboPasajero.getSelectionModel().clearSelection();
-        comboEstado.getSelectionModel().clearSelection();
-    }
-
-    private void llenarCamposDesdeSeleccion() {
-        if (equipajeSeleccionado != null) {
-            txtCodBarras.setText(equipajeSeleccionado.getCodigoDeBarras());
-            txtPeso.setText(String.valueOf(equipajeSeleccionado.getPeso()));
-            comboVuelo.setValue(idToVuelo.get(equipajeSeleccionado.getIdVuelo()));
-            comboPasajero.setValue(idToPasajero.get(equipajeSeleccionado.getIdPasajero()));
-            comboEstado.setValue(equipajeSeleccionado.getEstado());
-        }
-    }
-
-    @FXML
-    private void handleAddEquipaje() {
+    public void handleAddEquipaje() {
         String codBarras = txtCodBarras.getText().trim();
         String pesoStr = txtPeso.getText().trim();
         String vueloNombre = comboVuelo.getValue();
@@ -250,7 +253,7 @@ public class EquipajeController {
     }
 
     @FXML
-    private void handleEditEquipaje() {
+    public void handleEditEquipaje() {
         if (equipajeSeleccionado == null) {
             mostrarAlerta("Editar", "Seleccione un equipaje para editar.", Alert.AlertType.INFORMATION);
             return;
@@ -303,7 +306,7 @@ public class EquipajeController {
     }
 
     @FXML
-    private void handleDeleteEquipaje() {
+    public void handleDeleteEquipaje() {
         if (equipajeSeleccionado == null) {
             mostrarAlerta("Eliminar", "Seleccione un equipaje para eliminar.", Alert.AlertType.INFORMATION);
             return;
@@ -322,6 +325,135 @@ public class EquipajeController {
             }
         } catch (SQLException e) {
             mostrarAlerta("Error", "Error al eliminar equipaje:\n" + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    public void handleBuscarEquipaje() {
+        String texto = txtBuscar.getText().trim();
+        String sql = "SELECT e.ID_Maleta, e.CodigoDeBarras, e.Peso, e.ID_Vuelo, e.Estado, e.ID_Pasajero " +
+                "FROM Equipajes e " +
+                "LEFT JOIN Vuelos v ON e.ID_Vuelo = v.ID_Vuelo " +
+                "LEFT JOIN Pasajeros p ON e.ID_Pasajero = p.ID_Pasajero " +
+                "WHERE e.CodigoDeBarras LIKE ? OR v.NumeroVuelo LIKE ? OR CONCAT(p.Nombre, ' ', p.Apellido) LIKE ?";
+        data.clear();
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            String like = "%" + texto + "%";
+            stmt.setString(1, like);
+            stmt.setString(2, like);
+            stmt.setString(3, like);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Equipaje equipaje = new Equipaje(
+                            rs.getInt("ID_Maleta"),
+                            rs.getString("CodigoDeBarras"),
+                            rs.getDouble("Peso"),
+                            rs.getInt("ID_Vuelo"),
+                            rs.getString("Estado"),
+                            rs.getInt("ID_Pasajero")
+                    );
+                    data.add(equipaje);
+                }
+            }
+            tableEquipaje.setItems(data);
+            if (!data.isEmpty()) {
+                equipajeSeleccionado = data.get(0);
+                tableEquipaje.getSelectionModel().select(0);
+                llenarCamposDesdeSeleccion();
+            } else {
+                limpiarCampos();
+                mostrarAlerta("Buscar", "No se encontraron equipajes con ese criterio.", Alert.AlertType.INFORMATION);
+            }
+        } catch (SQLException e) {
+            mostrarAlerta("Error", "Error al buscar equipaje:\n" + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    public void handleLimpiarBusqueda() {
+        txtBuscar.clear();
+        limpiarCampos();
+        tableEquipaje.getSelectionModel().clearSelection();
+        cargarVuelosCombo();
+        cargarTabla();
+        equipajeSeleccionado = null;
+    }
+
+    private void limpiarCampos() {
+        txtCodBarras.clear();
+        txtPeso.clear();
+        comboVuelo.getSelectionModel().clearSelection();
+        comboPasajero.getSelectionModel().clearSelection();
+        comboEstado.getSelectionModel().clearSelection();
+        comboPasajero.getItems().clear();
+    }
+
+    private void llenarCamposDesdeSeleccion() {
+        if (equipajeSeleccionado != null) {
+            txtCodBarras.setText(equipajeSeleccionado.getCodigoDeBarras());
+            txtPeso.setText(String.valueOf(equipajeSeleccionado.getPeso()));
+            comboVuelo.setValue(idToVuelo.get(equipajeSeleccionado.getIdVuelo()));
+            cargarPasajerosComboPorVuelo(equipajeSeleccionado.getIdVuelo());
+            comboPasajero.setValue(idToPasajero.get(equipajeSeleccionado.getIdPasajero()));
+            comboEstado.setValue(equipajeSeleccionado.getEstado());
+        }
+    }
+
+    @FXML
+    public void handleGenerarReporte() {
+        List<Equipaje> equipajesParaReporte = new ArrayList<>(tableEquipaje.getItems());
+        if (equipajesParaReporte.isEmpty()) {
+            mostrarAlerta("Reporte", "No hay equipajes para generar el reporte.", Alert.AlertType.INFORMATION);
+            return;
+        }
+        try {
+            Document document = new Document();
+            String filename = "ReporteEquipaje_" + System.currentTimeMillis() + ".pdf";
+            PdfWriter.getInstance(document, new FileOutputStream(filename));
+            document.open();
+
+            String titulo = "Reporte de Equipaje";
+            if (comboVuelo.getValue() != null) {
+                titulo += " | Vuelo: " + comboVuelo.getValue();
+            }
+            if (comboPasajero.getValue() != null) {
+                titulo += " | Pasajero: " + comboPasajero.getValue();
+            }
+            document.add(new Paragraph(titulo, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new Paragraph(" "));
+
+            PdfPTable table = new PdfPTable(6);
+            table.addCell("ID Maleta");
+            table.addCell("Código de Barras");
+            table.addCell("Peso");
+            table.addCell("Vuelo");
+            table.addCell("Pasajero");
+            table.addCell("Estado");
+
+            for (Equipaje eq : equipajesParaReporte) {
+                table.addCell(String.valueOf(eq.getIdMaleta()));
+                table.addCell(eq.getCodigoDeBarras());
+                table.addCell(String.valueOf(eq.getPeso()));
+                table.addCell(idToVuelo.getOrDefault(eq.getIdVuelo(), String.valueOf(eq.getIdVuelo())));
+                table.addCell(idToPasajero.getOrDefault(eq.getIdPasajero(), String.valueOf(eq.getIdPasajero())));
+                table.addCell(eq.getEstado());
+            }
+            document.add(table);
+            document.close();
+
+            // Abrir el PDF automáticamente
+            File pdfFile = new File(filename);
+            if (pdfFile.exists()) {
+                if (Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().open(pdfFile);
+                }
+            }
+
+            mostrarAlerta("Reporte", "Reporte generado exitosamente: " + filename, Alert.AlertType.INFORMATION);
+        } catch (Exception ex) {
+            mostrarAlerta("Error", "No se pudo generar el PDF: " + ex.getMessage(), Alert.AlertType.ERROR);
         }
     }
 

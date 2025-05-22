@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.basedatos.aerouq.controller.DashboardController">
+
+    <!-- 📌 Menú superior -->
+    <top>
+        <MenuBar fx:id="menuBar">
+
+            <!-- 📁 ENTIDADES -->
+            <Menu text="Entidades">
+                <MenuItem text="Equipajes (🎒)" onAction="#loadEquipajesView" />
+            </Menu>
+            <!--  📊 REPORTES-->
+            <Menu text="Utilidades">
+                <MenuItem text="Usuarios (🔐)" onAction="#loadUsuariosView" />
+            </Menu>
+        </MenuBar>
+    </top>
+    <center>
+        <AnchorPane fx:id="contentArea"/>
+    </center>
+
+</BorderPane>

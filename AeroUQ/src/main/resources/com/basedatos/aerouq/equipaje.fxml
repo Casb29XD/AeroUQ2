@@ -22,7 +22,7 @@
         <Insets bottom="20" left="20" right="20" top="20" />
     </padding>
 
-    <!-- Título con efecto de sombra -->
+    <!-- Título -->
     <HBox alignment="CENTER" style="-fx-background-color: #2e8b57; -fx-background-radius: 10;">
         <padding>
             <Insets bottom="10" left="15" right="15" top="10" />
@@ -49,6 +49,7 @@
         <TextField fx:id="txtBuscar" promptText="Ingrese código de barras, vuelo o pasajero" HBox.hgrow="ALWAYS" />
         <Button fx:id="btnBuscar" onAction="#handleBuscarEquipaje" style="-fx-background-color: #2e8b57; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="🔍 Buscar"/>
         <Button fx:id="btnLimpiarBusqueda" onAction="#handleLimpiarBusqueda" style="-fx-background-color: #78a885; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="❌ Limpiar"/>
+        <Button fx:id="btnReporte" onAction="#handleGenerarReporte" style="-fx-background-color: #ffb347; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="📄 Reporte"/>
         <effect>
             <DropShadow>
                 <color>
@@ -67,10 +68,10 @@
         <TextField fx:id="txtPeso" promptText="Peso" GridPane.columnIndex="3" GridPane.rowIndex="0" />
 
         <Label style="-fx-font-weight: bold;" text="Vuelo:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-        <ComboBox fx:id="comboVuelo" promptText="Seleccione vuelo" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+        <ComboBox fx:id="comboVuelo" promptText="Seleccione vuelo" onAction="#handleVueloSeleccionado" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
         <Label style="-fx-font-weight: bold;" text="Pasajero:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-        <ComboBox fx:id="comboPasajero" promptText="Seleccione pasajero" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+        <ComboBox fx:id="comboPasajero" promptText="Seleccione pasajero" onAction="#handlePasajeroSeleccionado" GridPane.columnIndex="3" GridPane.rowIndex="1" />
 
         <Label style="-fx-font-weight: bold;" text="Estado:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
         <ComboBox fx:id="comboEstado" promptText="Seleccione estado" GridPane.columnIndex="1" GridPane.rowIndex="2">
