@@ -73,7 +73,7 @@
         <TextField fx:id="txtApellido" promptText="Apellido" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
         <Label style="-fx-font-weight: bold;" text="Cargo:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-        <ComboBox fx:id="comboCargo" promptText="Seleccione cargo" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+        <ComboBox fx:id="comboCargo" promptText="Seleccione cargo" onAction="#handleCargoSeleccionado" GridPane.columnIndex="3" GridPane.rowIndex="1" />
 
         <columnConstraints>
             <ColumnConstraints />
