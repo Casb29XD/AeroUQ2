@@ -51,7 +51,7 @@
         </VBox>
         <VBox spacing="10">
             <Label text="Vuelo:"/>
-            <ComboBox fx:id="comboVuelo" promptText="Seleccione vuelo"/>
+            <ComboBox fx:id="comboVuelo" promptText="Seleccione vuelo" onAction="#handleFiltrarPorVuelo"/>
         </VBox>
     </HBox>
 
@@ -63,6 +63,10 @@
                 style="-fx-background-color: #20b2aa; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;"/>
         <Button fx:id="btnDelete" text="➖ Eliminar" onAction="#handleDeletePasajero"
                 style="-fx-background-color: #db5a42; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;"/>
+        <Button fx:id="btnReporte" text="📄 Generar Reporte PDF" onAction="#handleReportePdf"
+                style="-fx-background-color: #8e44ad; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;"/>
+        <Button fx:id="btnLimpiar" text="❌ Limpiar" onAction="#handleLimpiar"
+                style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;"/>
     </HBox>
 
     <!-- Tabla de pasajeros -->

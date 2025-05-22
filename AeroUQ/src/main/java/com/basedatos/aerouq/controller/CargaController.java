@@ -44,6 +44,10 @@ public class CargaController {
                 "En espera", "En tránsito", "Entregado"
         ));
 
+        // Evento para filtrar por estado o tipo de carga
+        comboEstado.setOnAction(event -> handleFiltrar());
+        comboTipoCarga.setOnAction(event -> handleFiltrar());
+
         // Configura las columnas de la tabla
         colIdCarga.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getIdCarga())));
         colNIdAerolinea.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getIdAerolinea())));
@@ -86,6 +90,60 @@ public class CargaController {
         }
     }
 
+    private void cargarTablaFiltrada(String tipoCarga, String estado) {
+        data.clear();
+        StringBuilder where = new StringBuilder();
+        List<Object> params = new ArrayList<>();
+
+        if (tipoCarga != null && !tipoCarga.isEmpty()) {
+            where.append("TipoDeCarga = ?");
+            params.add(tipoCarga);
+        }
+
+        if (estado != null && !estado.isEmpty()) {
+            if (where.length() > 0) where.append(" AND ");
+            where.append("Estado = ?");
+            params.add(estado);
+        }
+
+        try {
+            List<Map<String, Object>> resultados;
+            if (where.length() > 0) {
+                resultados = repository.buscar("ControlDeCargaYLogistica", where.toString(), params);
+            } else {
+                resultados = repository.buscar("ControlDeCargaYLogistica");
+            }
+
+            for (Map<String, Object> fila : resultados) {
+                ControlDeCargaYLogistica carga = new ControlDeCargaYLogistica(
+                        ((Number) fila.get("ID_Carga")).intValue(),
+                        ((Number) fila.get("ID_Aerolinea")).intValue(),
+                        fila.get("Peso") instanceof Number
+                                ? ((Number) fila.get("Peso")).doubleValue()
+                                : Double.parseDouble(fila.get("Peso").toString()),
+                        (String) fila.get("TipoDeCarga"),
+                        (String) fila.get("Estado")
+                );
+                data.add(carga);
+            }
+            tableCargas.setItems(data);
+        } catch (SQLException e) {
+            mostrarAlerta("Error", "No se pudieron filtrar los datos:\n" + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    // Nuevo método para filtrar por estado y tipo de carga
+    @FXML
+    public void handleFiltrar() {
+        String estado = comboEstado.getValue();
+        String tipoCarga = comboTipoCarga.getValue();
+        if ((estado != null && !estado.isEmpty()) || (tipoCarga != null && !tipoCarga.isEmpty())) {
+            cargarTablaFiltrada(tipoCarga, estado);
+        } else {
+            cargarTabla();
+        }
+    }
+
     @FXML
     private void handleBuscarCarga() {
         String texto = txtBuscar.getText().trim();
@@ -125,7 +183,6 @@ public class CargaController {
             tableCargas.setItems(data);
 
             if (!data.isEmpty()) {
-                // Selecciona la primera coincidencia y llena los campos
                 cargaSeleccionada = data.get(0);
                 tableCargas.getSelectionModel().select(0);
                 llenarCamposDesdeSeleccion();
@@ -143,6 +200,8 @@ public class CargaController {
         txtBuscar.clear();
         limpiarCampos();
         tableCargas.getSelectionModel().clearSelection();
+        comboTipoCarga.getSelectionModel().clearSelection();
+        comboEstado.getSelectionModel().clearSelection();
         cargarTabla();
         cargaSeleccionada = null;
     }
