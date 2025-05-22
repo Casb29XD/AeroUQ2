@@ -68,7 +68,7 @@
         </VBox>
         <VBox spacing="10">
             <Label text="Estado:" />
-            <ComboBox fx:id="comboEstado" promptText="Seleccione estado">
+            <ComboBox fx:id="comboEstado" promptText="Seleccione estado" onAction="#handleFiltrarPorEstado">
                 <items>
                     <FXCollections fx:factory="observableArrayList">
                         <String fx:value="Completado"/>

@@ -150,15 +150,6 @@ public class MantenimientoController {
         }
     }
 
-    @FXML
-    private void handleLimpiarBusqueda() {
-        txtBuscar.clear();
-        limpiarCampos();
-        tableMantenimiento.getSelectionModel().clearSelection();
-        cargarTabla();
-        mantenimientoSeleccionado = null;
-    }
-
     private void limpiarCampos() {
         comboAeronave.getSelectionModel().clearSelection();
         txtDescripcion.clear();
@@ -277,7 +268,47 @@ public class MantenimientoController {
             mostrarAlerta("Error", "Error al eliminar mantenimiento:\n" + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
+    // ...tu código previo...
+    @FXML
+    public void handleFiltrarPorEstado() {
+        String estado = comboEstado.getValue();
+        if (estado != null && !estado.isEmpty()) {
+            data.clear();
+            String sql = "SELECT m.ID_Mantenimiento, m.ID_Aeronave, a.Matricula, m.Descripcion, m.FechaMantenimiento, m.Estado " +
+                    "FROM MantenimientoAeronaves m JOIN Aeronaves a ON m.ID_Aeronave = a.ID_Aeronave " +
+                    "WHERE m.Estado = ?";
+            try (Connection conn = DatabaseConfig.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, estado);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        MantenimientoAeronave mant = new MantenimientoAeronave(
+                                rs.getInt("ID_Mantenimiento"),
+                                rs.getInt("ID_Aeronave"),
+                                rs.getString("Matricula"),
+                                rs.getString("Descripcion"),
+                                rs.getString("FechaMantenimiento"),
+                                rs.getString("Estado")
+                        );
+                        data.add(mant);
+                    }
+                }
+                tableMantenimiento.setItems(data);
+            } catch (SQLException e) {
+                mostrarAlerta("Error", "No se pudieron filtrar los mantenimientos:\n" + e.getMessage(), Alert.AlertType.ERROR);
+            }
+        }
+    }
 
+    @FXML
+    private void handleLimpiarBusqueda() {
+        txtBuscar.clear();
+        comboEstado.getSelectionModel().clearSelection();
+        limpiarCampos();
+        tableMantenimiento.getSelectionModel().clearSelection();
+        cargarTabla();
+        mantenimientoSeleccionado = null;
+    }
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alert = new Alert(tipo);
         alert.setTitle(titulo);

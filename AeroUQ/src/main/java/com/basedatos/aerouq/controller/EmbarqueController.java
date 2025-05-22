@@ -2,7 +2,6 @@ package com.basedatos.aerouq.controller;
 
 import com.basedatos.aerouq.model.PuertaDeEmbarque;
 import com.basedatos.aerouq.repository.DatabaseRepository;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -15,74 +14,58 @@ import java.util.*;
 public class EmbarqueController {
 
     @FXML private TextField txtNumeroPuerta;
-    @FXML private TextField txtEstado;
     @FXML private TextField txtBuscar;
+    @FXML private ComboBox<String> comboEstado;
     @FXML private Button btnBuscar;
     @FXML private Button btnLimpiarBusqueda;
     @FXML private Button btnAdd;
     @FXML private Button btnEdit;
     @FXML private Button btnDelete;
-    @FXML private TableView<PuertaDeEmbarque> tablePuertas;
-    @FXML private TableColumn<PuertaDeEmbarque, String> colIdPuerta;
-    @FXML private TableColumn<PuertaDeEmbarque, String> colNumeroPuerta;
-    @FXML private TableColumn<PuertaDeEmbarque, String> colEstado;
-
-    // Para la tabla de vuelos con puertas ocupadas
-    @FXML private TableView<VueloOcupado> tableVuelosOcupados;
-    @FXML private TableColumn<VueloOcupado, Number> colIdVuelo;
-    @FXML private TableColumn<VueloOcupado, String> colNumeroVuelo;
-    @FXML private TableColumn<VueloOcupado, String> colOrigen;
-    @FXML private TableColumn<VueloOcupado, String> colDestino;
-    @FXML private TableColumn<VueloOcupado, String> colFechaSalida;
-    @FXML private TableColumn<VueloOcupado, String> colFechaLlegada;
-    @FXML private TableColumn<VueloOcupado, String> colEstadoVuelo;
-    @FXML private TableColumn<VueloOcupado, String> colNumeroPuertaVuelo;
+    @FXML private TableView<PuertaDeEmbarqueVuelo> tablePuertas;
+    @FXML private TableColumn<PuertaDeEmbarqueVuelo, String> colIdPuerta;
+    @FXML private TableColumn<PuertaDeEmbarqueVuelo, String> colNumeroPuerta;
+    @FXML private TableColumn<PuertaDeEmbarqueVuelo, String> colEstado;
+    @FXML private TableColumn<PuertaDeEmbarqueVuelo, String> colNumeroVuelo;
 
     private final DatabaseRepository repository = new DatabaseRepository();
-    private ObservableList<PuertaDeEmbarque> data = FXCollections.observableArrayList();
-    private ObservableList<VueloOcupado> vuelosOcupadosData = FXCollections.observableArrayList();
+    private ObservableList<PuertaDeEmbarqueVuelo> data = FXCollections.observableArrayList();
 
-    private PuertaDeEmbarque puertaSeleccionada = null;
+    private PuertaDeEmbarqueVuelo puertaSeleccionada = null;
 
-    // Modelo auxiliar para la tabla de vuelos
-    public static class VueloOcupado {
-        private final SimpleIntegerProperty idVuelo;
-        private final SimpleStringProperty numeroVuelo;
-        private final SimpleStringProperty origen;
-        private final SimpleStringProperty destino;
-        private final SimpleStringProperty fechaSalida;
-        private final SimpleStringProperty fechaLlegada;
-        private final SimpleStringProperty estadoVuelo;
-        private final SimpleStringProperty numeroPuerta;
+    // Modelo auxiliar para mostrar puerta y número de vuelo asociado (si existe)
+    public static class PuertaDeEmbarqueVuelo {
+        private final int idPuerta;
+        private final String numeroPuerta;
+        private final String estado;
+        private final String numeroVuelo; // Puede ser null
 
-        public VueloOcupado(int idVuelo, String numeroVuelo, String origen, String destino, String fechaSalida, String fechaLlegada, String estadoVuelo, String numeroPuerta) {
-            this.idVuelo = new SimpleIntegerProperty(idVuelo);
-            this.numeroVuelo = new SimpleStringProperty(numeroVuelo);
-            this.origen = new SimpleStringProperty(origen);
-            this.destino = new SimpleStringProperty(destino);
-            this.fechaSalida = new SimpleStringProperty(fechaSalida);
-            this.fechaLlegada = new SimpleStringProperty(fechaLlegada);
-            this.estadoVuelo = new SimpleStringProperty(estadoVuelo);
-            this.numeroPuerta = new SimpleStringProperty(numeroPuerta);
+        public PuertaDeEmbarqueVuelo(int idPuerta, String numeroPuerta, String estado, String numeroVuelo) {
+            this.idPuerta = idPuerta;
+            this.numeroPuerta = numeroPuerta;
+            this.estado = estado;
+            this.numeroVuelo = numeroVuelo;
         }
 
-        public int getIdVuelo() { return idVuelo.get(); }
-        public String getNumeroVuelo() { return numeroVuelo.get(); }
-        public String getOrigen() { return origen.get(); }
-        public String getDestino() { return destino.get(); }
-        public String getFechaSalida() { return fechaSalida.get(); }
-        public String getFechaLlegada() { return fechaLlegada.get(); }
-        public String getEstadoVuelo() { return estadoVuelo.get(); }
-        public String getNumeroPuerta() { return numeroPuerta.get(); }
+        public int getIdPuerta() { return idPuerta; }
+        public String getNumeroPuerta() { return numeroPuerta; }
+        public String getEstado() { return estado; }
+        public String getNumeroVuelo() { return numeroVuelo; }
     }
 
     @FXML
     private void initialize() {
-        // Puertas
+        // ComboBox de estados
+        comboEstado.setItems(FXCollections.observableArrayList("Disponible", "Ocupada", "Mantenimiento"));
+
+        // Columnas tabla
         colIdPuerta.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getIdPuerta())));
         colNumeroPuerta.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getNumeroPuerta()));
         colEstado.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEstado()));
-        cargarTabla();
+        colNumeroVuelo.setCellValueFactory(cellData -> new SimpleStringProperty(
+                cellData.getValue().getNumeroVuelo() != null ? cellData.getValue().getNumeroVuelo() : "—"
+        ));
+
+        cargarTablaPuertas(null); // Cargar todas al inicio
 
         tablePuertas.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldSelection, newSelection) -> {
@@ -92,30 +75,29 @@ public class EmbarqueController {
                     }
                 }
         );
-
-        // Vuelos ocupados
-        colIdVuelo.setCellValueFactory(cellData -> new SimpleIntegerProperty(cellData.getValue().getIdVuelo()));
-        colNumeroVuelo.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getNumeroVuelo()));
-        colOrigen.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getOrigen()));
-        colDestino.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDestino()));
-        colFechaSalida.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getFechaSalida()));
-        colFechaLlegada.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getFechaLlegada()));
-        colEstadoVuelo.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEstadoVuelo()));
-        colNumeroPuertaVuelo.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getNumeroPuerta()));
-        tableVuelosOcupados.setItems(vuelosOcupadosData);
-
-        cargarVuelosConPuertaOcupada();
     }
 
-    private void cargarTabla() {
+    private void cargarTablaPuertas(String estadoFiltro) {
         data.clear();
         try {
-            List<Map<String, Object>> resultados = repository.buscar("PuertasDeEmbarque");
+            String sql = """
+                SELECT p.ID_Puerta, p.NumeroPuerta, p.Estado, v.NumeroVuelo
+                FROM PuertasDeEmbarque p
+                LEFT JOIN Vuelos v ON v.ID_Puerta = p.ID_Puerta
+            """;
+            List<Object> params = new ArrayList<>();
+            if (estadoFiltro != null) {
+                sql += " WHERE p.Estado = ?";
+                params.add(estadoFiltro);
+            }
+            List<Map<String, Object>> resultados = repository.buscarPorConsulta(sql, params);
+
             for (Map<String, Object> fila : resultados) {
-                PuertaDeEmbarque puerta = new PuertaDeEmbarque(
+                PuertaDeEmbarqueVuelo puerta = new PuertaDeEmbarqueVuelo(
                         (int) fila.get("ID_Puerta"),
                         (String) fila.get("NumeroPuerta"),
-                        (String) fila.get("Estado")
+                        (String) fila.get("Estado"),
+                        (String) fila.get("NumeroVuelo") // Puede ser null
                 );
                 data.add(puerta);
             }
@@ -125,34 +107,22 @@ public class EmbarqueController {
         }
     }
 
-    private void cargarVuelosConPuertaOcupada() {
-        vuelosOcupadosData.clear();
-        try {
-            String sql = """
-                SELECT v.ID_Vuelo, v.NumeroVuelo, v.Origen, v.Destino, v.FechaHoraSalida, v.FechaHoraLlegada, v.EstadoVuelo, p.NumeroPuerta
-                FROM Vuelos v
-                JOIN PuertasDeEmbarque p ON v.ID_Puerta = p.ID_Puerta
-                WHERE p.Estado = ?
-            """;
-            List<Object> parametros = Collections.singletonList("Ocupada");
-            List<Map<String, Object>> resultados = repository.buscarPorConsulta(sql, parametros);
-
-            for (Map<String, Object> fila : resultados) {
-                VueloOcupado vuelo = new VueloOcupado(
-                        (int) fila.get("ID_Vuelo"),
-                        (String) fila.get("NumeroVuelo"),
-                        (String) fila.get("Origen"),
-                        (String) fila.get("Destino"),
-                        (fila.get("FechaHoraSalida") != null ? fila.get("FechaHoraSalida").toString() : ""),
-                        (fila.get("FechaHoraLlegada") != null ? fila.get("FechaHoraLlegada").toString() : ""),
-                        (String) fila.get("EstadoVuelo"),
-                        (String) fila.get("NumeroPuerta")
-                );
-                vuelosOcupadosData.add(vuelo);
-            }
-        } catch (SQLException e) {
-            mostrarAlerta("Error", "No se pudieron cargar los vuelos con puertas ocupadas:\n" + e.getMessage(), Alert.AlertType.ERROR);
+    @FXML
+    public void handleFiltrarPorEstado() {
+        String estado = comboEstado.getSelectionModel().getSelectedItem();
+        if (estado != null && !estado.isEmpty()) {
+            cargarTablaPuertas(estado);
         }
+    }
+
+    @FXML
+    private void handleLimpiarBusqueda() {
+        txtBuscar.clear();
+        comboEstado.getSelectionModel().clearSelection();
+        limpiarCampos();
+        tablePuertas.getSelectionModel().clearSelection();
+        puertaSeleccionada = null;
+        cargarTablaPuertas(null);
     }
 
     @FXML
@@ -163,51 +133,52 @@ public class EmbarqueController {
             return;
         }
         try {
-            List<Map<String, Object>> resultados = repository.buscar("PuertasDeEmbarque", "ID_Puerta = ?", Collections.singletonList(Integer.valueOf(buscarId)));
+            String sql = """
+                SELECT p.ID_Puerta, p.NumeroPuerta, p.Estado, v.NumeroVuelo
+                FROM PuertasDeEmbarque p
+                LEFT JOIN Vuelos v ON v.ID_Puerta = p.ID_Puerta
+                WHERE p.ID_Puerta = ?
+            """;
+            List<Object> params = Collections.singletonList(Integer.valueOf(buscarId));
+            List<Map<String, Object>> resultados = repository.buscarPorConsulta(sql, params);
             if (resultados.isEmpty()) {
                 mostrarAlerta("Buscar", "No se encontró ninguna puerta con ese ID.", Alert.AlertType.INFORMATION);
                 return;
             }
-            Map<String, Object> fila = resultados.get(0);
-            PuertaDeEmbarque puerta = new PuertaDeEmbarque(
-                    (int) fila.get("ID_Puerta"),
-                    (String) fila.get("NumeroPuerta"),
-                    (String) fila.get("Estado")
-            );
-            puertaSeleccionada = puerta;
-            tablePuertas.getSelectionModel().select(buscarPuertaEnTabla(puerta.getIdPuerta()));
-            llenarCamposDesdeSeleccion();
+            data.clear();
+            for (Map<String, Object> fila : resultados) {
+                PuertaDeEmbarqueVuelo puerta = new PuertaDeEmbarqueVuelo(
+                        (int) fila.get("ID_Puerta"),
+                        (String) fila.get("NumeroPuerta"),
+                        (String) fila.get("Estado"),
+                        (String) fila.get("NumeroVuelo")
+                );
+                data.add(puerta);
+            }
+            tablePuertas.setItems(data);
         } catch (Exception e) {
             mostrarAlerta("Error", "Error al buscar puerta:\n" + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
-    @FXML
-    private void handleLimpiarBusqueda() {
-        txtBuscar.clear();
-        limpiarCampos();
-        tablePuertas.getSelectionModel().clearSelection();
-        puertaSeleccionada = null;
-    }
-
     private void limpiarCampos() {
         txtNumeroPuerta.clear();
-        txtEstado.clear();
+        // No limpiar comboEstado aquí, ya se limpia en handleLimpiarBusqueda
     }
 
     private void llenarCamposDesdeSeleccion() {
         if (puertaSeleccionada != null) {
             txtNumeroPuerta.setText(puertaSeleccionada.getNumeroPuerta());
-            txtEstado.setText(puertaSeleccionada.getEstado());
+            comboEstado.getSelectionModel().select(puertaSeleccionada.getEstado());
         }
     }
 
     @FXML
     private void handleAddPuerta() {
         String numeroPuerta = txtNumeroPuerta.getText().trim();
-        String estado = txtEstado.getText().trim();
+        String estado = comboEstado.getSelectionModel().getSelectedItem();
 
-        if (numeroPuerta.isEmpty() || estado.isEmpty()) {
+        if (numeroPuerta.isEmpty() || estado == null || estado.isEmpty()) {
             mostrarAlerta("Agregar", "Todos los campos son obligatorios.", Alert.AlertType.WARNING);
             return;
         }
@@ -220,8 +191,7 @@ public class EmbarqueController {
             int filas = repository.insertar("PuertasDeEmbarque", datos);
             if (filas > 0) {
                 mostrarAlerta("Éxito", "Puerta agregada correctamente.", Alert.AlertType.INFORMATION);
-                cargarTabla();
-                cargarVuelosConPuertaOcupada();
+                cargarTablaPuertas(null);
                 limpiarCampos();
                 puertaSeleccionada = null;
             }
@@ -237,8 +207,8 @@ public class EmbarqueController {
             return;
         }
         String numeroPuerta = txtNumeroPuerta.getText().trim();
-        String estado = txtEstado.getText().trim();
-        if (numeroPuerta.isEmpty() || estado.isEmpty()) {
+        String estado = comboEstado.getSelectionModel().getSelectedItem();
+        if (numeroPuerta.isEmpty() || estado == null || estado.isEmpty()) {
             mostrarAlerta("Editar", "Todos los campos son obligatorios.", Alert.AlertType.WARNING);
             return;
         }
@@ -256,8 +226,7 @@ public class EmbarqueController {
             );
             if (filas > 0) {
                 mostrarAlerta("Éxito", "Puerta actualizada correctamente.", Alert.AlertType.INFORMATION);
-                cargarTabla();
-                cargarVuelosConPuertaOcupada();
+                cargarTablaPuertas(null);
                 limpiarCampos();
                 puertaSeleccionada = null;
             }
@@ -280,21 +249,13 @@ public class EmbarqueController {
             );
             if (filas > 0) {
                 mostrarAlerta("Éxito", "Puerta eliminada correctamente.", Alert.AlertType.INFORMATION);
-                cargarTabla();
-                cargarVuelosConPuertaOcupada();
+                cargarTablaPuertas(null);
                 limpiarCampos();
                 puertaSeleccionada = null;
             }
         } catch (SQLException e) {
             mostrarAlerta("Error", "Error al eliminar puerta:\n" + e.getMessage(), Alert.AlertType.ERROR);
         }
-    }
-
-    private PuertaDeEmbarque buscarPuertaEnTabla(int idPuerta) {
-        for (PuertaDeEmbarque p : data) {
-            if (p.getIdPuerta() == idPuerta) return p;
-        }
-        return null;
     }
 
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
