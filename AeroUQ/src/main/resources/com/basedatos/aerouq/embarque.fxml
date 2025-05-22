@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.paint.Color?>
 
-<VBox prefHeight="500.0" prefWidth="800.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #e6f5e9, #d4ebd7);" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.basedatos.aerouq.controller.EmbarqueController">
+<VBox prefHeight="650.0" prefWidth="800.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #e6f5e9, #d4ebd7);" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.basedatos.aerouq.controller.EmbarqueController">
     <padding>
         <Insets bottom="20" left="20" right="20" top="20" />
     </padding>
@@ -55,12 +55,30 @@
         <Button fx:id="btnDelete" onAction="#handleDeletePuerta" style="-fx-background-color: #db5a42; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" text="Eliminar Puerta ➖" />
     </HBox>
 
-    <!-- Tabla -->
-    <TableView fx:id="tablePuertas" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #a3d2a3;" VBox.vgrow="ALWAYS">
+    <!-- Tabla de Puertas de Embarque -->
+    <TableView fx:id="tablePuertas" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #a3d2a3;" VBox.vgrow="NEVER">
         <columns>
             <TableColumn fx:id="colIdPuerta" prefWidth="100" text="ID Puerta" />
             <TableColumn fx:id="colNumeroPuerta" prefWidth="150" text="Número de puerta" />
             <TableColumn fx:id="colEstado" prefWidth="150" text="Estado" />
+        </columns>
+        <columnResizePolicy>
+            <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
+        </columnResizePolicy>
+    </TableView>
+
+    <!-- Tabla de Vuelos con Puertas Ocupadas -->
+    <Label text="Vuelos con Puertas Ocupadas" style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-padding: 10 0 0 0;" />
+    <TableView fx:id="tableVuelosOcupados" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #a3d2a3;" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colIdVuelo" prefWidth="90" text="ID Vuelo" />
+            <TableColumn fx:id="colNumeroVuelo" prefWidth="115" text="Número Vuelo" />
+            <TableColumn fx:id="colOrigen" prefWidth="115" text="Origen" />
+            <TableColumn fx:id="colDestino" prefWidth="115" text="Destino" />
+            <TableColumn fx:id="colFechaSalida" prefWidth="140" text="Salida" />
+            <TableColumn fx:id="colFechaLlegada" prefWidth="140" text="Llegada" />
+            <TableColumn fx:id="colEstadoVuelo" prefWidth="110" text="Estado Vuelo" />
+            <TableColumn fx:id="colNumeroPuertaVuelo" prefWidth="110" text="Puerta Asignada" />
         </columns>
         <columnResizePolicy>
             <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />

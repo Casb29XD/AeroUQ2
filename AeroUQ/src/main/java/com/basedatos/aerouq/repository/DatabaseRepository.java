@@ -142,6 +142,33 @@ public class DatabaseRepository {
         return resultados;
     }
 
+    // Agrega este método en tu clase DatabaseRepository:
+
+    public List<Map<String, Object>> buscarPorConsulta(String sql, List<Object> parametros) throws SQLException {
+        List<Map<String, Object>> resultados = new ArrayList<>();
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            for (int i = 0; i < parametros.size(); i++) {
+                stmt.setObject(i + 1, parametros.get(i));
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                ResultSetMetaData meta = rs.getMetaData();
+                int columnas = meta.getColumnCount();
+
+                while (rs.next()) {
+                    Map<String, Object> fila = new HashMap<>();
+                    for (int i = 1; i <= columnas; i++) {
+                        fila.put(meta.getColumnName(i), rs.getObject(i));
+                    }
+                    resultados.add(fila);
+                }
+            }
+        }
+        return resultados;
+    }
+
     public List<Map<String, Object>> buscar(String tabla) throws SQLException {
         return buscar(tabla, "1=1", Collections.emptyList());
     }
