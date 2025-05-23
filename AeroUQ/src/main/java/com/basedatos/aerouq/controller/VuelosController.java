@@ -9,12 +9,19 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.*;
+import javafx.scene.control.TextField;
+
+import java.io.File;
+import java.io.FileOutputStream;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.Date;
+import java.util.List;
 
 public class VuelosController {
 
@@ -34,6 +41,7 @@ public class VuelosController {
     @FXML private Button btnAdd;
     @FXML private Button btnEdit;
     @FXML private Button btnDelete;
+    @FXML private Button btnReporte;
 
     @FXML private TableView<Vuelo> tableVuelos;
     @FXML private TableColumn<Vuelo, String> colIdVuelo;
@@ -46,7 +54,6 @@ public class VuelosController {
     @FXML private TableColumn<Vuelo, String> colEstadoVuelo;
     @FXML private TableColumn<Vuelo, String> colPuerta;
 
-    // NUEVO: Filtros por estado y aerolínea
     @FXML private ComboBox<String> comboFiltroEstadoVuelo;
     @FXML private ComboBox<String> comboFiltroAerolinea;
 
@@ -56,10 +63,8 @@ public class VuelosController {
     private Vuelo vueloSeleccionado = null;
     private final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    // Aerolíneas
     private Map<String, Integer> nombreAerolineaToId = new HashMap<>();
     private Map<Integer, String> idToNombreAerolinea = new HashMap<>();
-    // Puertas
     private Map<String, Integer> numeroPuertaToId = new HashMap<>();
     private Map<Integer, String> idToNumeroPuerta = new HashMap<>();
 
@@ -71,7 +76,6 @@ public class VuelosController {
         cargarAerolineasCombo();
         cargarPuertasCombo();
 
-        // NUEVO: Inicializa combos de filtro
         inicializarFiltros();
 
         colIdVuelo.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getIdVuelo())));
@@ -106,15 +110,12 @@ public class VuelosController {
         );
     }
 
-    // Inicialización de filtros por estado y aerolínea
     private void inicializarFiltros() {
-        // Inserta estos ComboBox en tu FXML donde lo necesites, y asocia fx:id="comboFiltroEstadoVuelo" y fx:id="comboFiltroAerolinea"
         if (comboFiltroEstadoVuelo != null) {
             comboFiltroEstadoVuelo.setItems(FXCollections.observableArrayList(ESTADOS));
             comboFiltroEstadoVuelo.setOnAction(e -> filtrarTabla());
         }
         if (comboFiltroAerolinea != null) {
-            // Llenar con las aerolíneas disponibles
             List<String> aerolineas = new ArrayList<>(nombreAerolineaToId.keySet());
             comboFiltroAerolinea.setItems(FXCollections.observableArrayList(aerolineas));
             comboFiltroAerolinea.setOnAction(e -> filtrarTabla());
@@ -134,7 +135,6 @@ public class VuelosController {
                 idToNombreAerolinea.put(id, nombre);
                 comboAerolinea.getItems().add(nombre);
             }
-            // Actualiza filtro si existe
             if (comboFiltroAerolinea != null) {
                 comboFiltroAerolinea.setItems(FXCollections.observableArrayList(nombreAerolineaToId.keySet()));
             }
@@ -194,14 +194,12 @@ public class VuelosController {
             }
             tableVuelos.setItems(data);
 
-            // Aplica filtro si hay selección
             filtrarTabla();
         } catch (SQLException e) {
             mostrarAlerta("Error", "No se pudieron cargar los vuelos:\n" + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
-    // Filtro por Estado y/o Aerolínea
     private void filtrarTabla() {
         String estadoFiltro = comboFiltroEstadoVuelo != null ? comboFiltroEstadoVuelo.getValue() : null;
         String aerolineaFiltro = comboFiltroAerolinea != null ? comboFiltroAerolinea.getValue() : null;
@@ -219,7 +217,7 @@ public class VuelosController {
         }
 
         if ((estadoFiltro == null || estadoFiltro.isEmpty()) && (aerolineaFiltro == null || aerolineaFiltro.isEmpty())) {
-            tableVuelos.setItems(data); // Sin filtro
+            tableVuelos.setItems(data);
         } else {
             tableVuelos.setItems(filtrados);
         }
@@ -287,7 +285,6 @@ public class VuelosController {
         txtBuscar.clear();
         limpiarCampos();
         tableVuelos.getSelectionModel().clearSelection();
-        // NUEVO: limpiar filtros
         if (comboFiltroEstadoVuelo != null) comboFiltroEstadoVuelo.getSelectionModel().clearSelection();
         if (comboFiltroAerolinea != null) comboFiltroAerolinea.getSelectionModel().clearSelection();
         cargarTabla();
@@ -314,7 +311,6 @@ public class VuelosController {
             txtOrigen.setText(vueloSeleccionado.getOrigen());
             txtDestino.setText(vueloSeleccionado.getDestino());
 
-            // Salida
             if (vueloSeleccionado.getFechaHoraSalida() != null) {
                 Date fecha = vueloSeleccionado.getFechaHoraSalida();
                 LocalDate localDate = new java.sql.Date(fecha.getTime()).toLocalDate();
@@ -324,7 +320,6 @@ public class VuelosController {
                 datePickerSalida.setValue(null);
                 txtHoraSalida.clear();
             }
-            // Llegada
             if (vueloSeleccionado.getFechaHoraLlegada() != null) {
                 Date fecha = vueloSeleccionado.getFechaHoraLlegada();
                 LocalDate localDate = new java.sql.Date(fecha.getTime()).toLocalDate();
@@ -480,5 +475,119 @@ public class VuelosController {
         alert.setHeaderText(null);
         alert.setContentText(mensaje);
         alert.showAndWait();
+    }
+
+    // === MÉTODO DE REPORTE PDF ===
+    @FXML
+    private void handleReporteVueloReporte() {
+        Vuelo vuelo = tableVuelos.getSelectionModel().getSelectedItem();
+        if (vuelo == null) {
+            mostrarAlerta("Reporte PDF", "Seleccione un vuelo para generar el reporte.", Alert.AlertType.WARNING);
+            return;
+        }
+
+        int idVuelo = vuelo.getIdVuelo();
+        String nombreAerolinea = idToNombreAerolinea.get(vuelo.getIdAerolinea());
+        String numeroVuelo = vuelo.getNumeroVuelo();
+        String origen = vuelo.getOrigen();
+        String destino = vuelo.getDestino();
+        java.util.Date fechaSalida = vuelo.getFechaHoraSalida();
+        java.util.Date fechaLlegada = vuelo.getFechaHoraLlegada();
+        String estadoVuelo = vuelo.getEstadoVuelo();
+        String puerta = idToNumeroPuerta.get(vuelo.getIdPuerta());
+
+        List<String[]> pasajerosConEquipaje = new ArrayList<>();
+        String sql = """
+                SELECT p.Nombre, p.Apellido, p.DocumentoIdentidad, COUNT(e.ID_Maleta) AS NumeroEquipaje
+                FROM Pasajeros p
+                LEFT JOIN Equipajes e ON p.ID_Pasajero = e.ID_Pasajero AND e.ID_Vuelo = ?
+                WHERE p.ID_Vuelo = ?
+                GROUP BY p.ID_Pasajero, p.Nombre, p.Apellido, p.DocumentoIdentidad
+                """;
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idVuelo);
+            stmt.setInt(2, idVuelo);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    String nombre = rs.getString("Nombre");
+                    String apellido = rs.getString("Apellido");
+                    String documento = rs.getString("DocumentoIdentidad");
+                    String numEquipaje = String.valueOf(rs.getInt("NumeroEquipaje"));
+                    pasajerosConEquipaje.add(new String[]{nombre, apellido, documento, numEquipaje});
+                }
+            }
+        } catch (Exception e) {
+            mostrarAlerta("Error", "Error al consultar pasajeros y equipaje: " + e.getMessage(), Alert.AlertType.ERROR);
+            return;
+        }
+
+        String fileName = "ReporteVuelo_" + numeroVuelo.replaceAll("\\s+","_") + ".pdf";
+        File pdfFile = new File(fileName);
+
+        try {
+            Document document = new Document();
+            PdfWriter.getInstance(document, new FileOutputStream(pdfFile));
+            document.open();
+
+            // Título
+            Paragraph title = new Paragraph("Reporte de Vuelo", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18));
+            title.setAlignment(Element.ALIGN_CENTER);
+            document.add(title);
+            document.add(new Paragraph(" "));
+
+            // Info Aerolínea y Vuelo
+            PdfPTable infoTable = new PdfPTable(2);
+            infoTable.setWidthPercentage(100);
+            infoTable.addCell("Aerolínea:");
+            infoTable.addCell(nombreAerolinea);
+            infoTable.addCell("Número de Vuelo:");
+            infoTable.addCell(numeroVuelo);
+            infoTable.addCell("Origen:");
+            infoTable.addCell(origen);
+            infoTable.addCell("Destino:");
+            infoTable.addCell(destino);
+            infoTable.addCell("Fecha/Hora Salida:");
+            infoTable.addCell(fechaSalida != null ? new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(fechaSalida) : "");
+            infoTable.addCell("Fecha/Hora Llegada:");
+            infoTable.addCell(fechaLlegada != null ? new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(fechaLlegada) : "");
+            infoTable.addCell("Estado del Vuelo:");
+            infoTable.addCell(estadoVuelo);
+            infoTable.addCell("Puerta de Embarque:");
+            infoTable.addCell(puerta);
+            document.add(infoTable);
+
+            document.add(new Paragraph(" "));
+
+            // Lista de pasajeros y equipaje
+            Paragraph p = new Paragraph("Lista de Pasajeros y Equipaje", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14));
+            p.setSpacingAfter(10f);
+            document.add(p);
+
+            PdfPTable table = new PdfPTable(4);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{3f, 3f, 3f, 2f});
+            table.addCell("Nombre");
+            table.addCell("Apellido");
+            table.addCell("Documento");
+            table.addCell("Nº Equipaje");
+
+            for (String[] pasajero : pasajerosConEquipaje) {
+                table.addCell(pasajero[0]);
+                table.addCell(pasajero[1]);
+                table.addCell(pasajero[2]);
+                table.addCell(pasajero[3]);
+            }
+            document.add(table);
+
+            document.close();
+            mostrarAlerta("Éxito", "Reporte PDF generado correctamente en la raíz del proyecto.", Alert.AlertType.INFORMATION);
+
+            if (java.awt.Desktop.isDesktopSupported()) {
+                java.awt.Desktop.getDesktop().open(pdfFile);
+            }
+        } catch (Exception ex) {
+            mostrarAlerta("Error", "No se pudo generar o abrir el PDF: " + ex.getMessage(), Alert.AlertType.ERROR);
+        }
     }
 }

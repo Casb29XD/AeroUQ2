@@ -7,6 +7,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.Color?>
 
+<?import java.lang.String?>
 <VBox prefHeight="600.0" prefWidth="900.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #e6f5e9, #d4ebd7);" xmlns="http://javafx.com/javafx/20" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.basedatos.aerouq.controller.VuelosController">
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
@@ -102,6 +103,10 @@
             <padding><Insets top="10" bottom="10" left="20" right="20"/></padding>
         </Button>
         <Button fx:id="btnDelete" text="Eliminar Vuelo ➖" onAction="#handleDeleteVuelo" style="-fx-background-color: #db5a42; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;">
+            <padding><Insets top="10" bottom="10" left="20" right="20"/></padding>
+        </Button>
+        <Button fx:id="btnReporte" text="Reporte PDF 📝" onAction="#handleReporteVueloReporte"
+                style="-fx-background-color: #4682b4; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;">
             <padding><Insets top="10" bottom="10" left="20" right="20"/></padding>
         </Button>
     </HBox>
