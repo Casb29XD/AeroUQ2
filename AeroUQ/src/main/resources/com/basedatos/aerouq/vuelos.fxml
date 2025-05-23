@@ -7,8 +7,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.Color?>
 
-<?import java.lang.String?>
-<VBox prefHeight="600.0" prefWidth="800.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #e6f5e9, #d4ebd7);" xmlns="http://javafx.com/javafx/20" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.basedatos.aerouq.controller.VuelosController">
+<VBox prefHeight="600.0" prefWidth="900.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #e6f5e9, #d4ebd7);" xmlns="http://javafx.com/javafx/20" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.basedatos.aerouq.controller.VuelosController">
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
@@ -29,7 +28,7 @@
         </Label>
     </HBox>
 
-    <!-- Barra de búsqueda -->
+    <!-- Barra de búsqueda y filtros -->
     <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 10;">
         <Label text="Buscar vuelo:" style="-fx-font-weight: bold;"/>
         <TextField fx:id="txtBuscar" promptText="Ingrese ID o número de vuelo" HBox.hgrow="ALWAYS"/>
@@ -39,6 +38,11 @@
         <Button fx:id="btnLimpiarBusqueda" text="❌ Limpiar" onAction="#handleLimpiarBusqueda" style="-fx-background-color: #78a885; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;">
             <padding><Insets top="8" bottom="8" left="15" right="15"/></padding>
         </Button>
+        <Separator orientation="VERTICAL" prefWidth="20"/>
+        <Label text="Filtrar por Estado:" style="-fx-font-weight: bold;"/>
+        <ComboBox fx:id="comboFiltroEstadoVuelo" promptText="Filtrar estado" minWidth="130"/>
+        <Label text="Filtrar por Aerolínea:" style="-fx-font-weight: bold;"/>
+        <ComboBox fx:id="comboFiltroAerolinea" promptText="Filtrar aerolínea" minWidth="140"/>
     </HBox>
 
     <!-- Panel de entrada de datos -->

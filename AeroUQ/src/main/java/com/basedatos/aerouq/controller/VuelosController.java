@@ -46,6 +46,10 @@ public class VuelosController {
     @FXML private TableColumn<Vuelo, String> colEstadoVuelo;
     @FXML private TableColumn<Vuelo, String> colPuerta;
 
+    // NUEVO: Filtros por estado y aerolínea
+    @FXML private ComboBox<String> comboFiltroEstadoVuelo;
+    @FXML private ComboBox<String> comboFiltroAerolinea;
+
     private final DatabaseRepository repository = new DatabaseRepository();
     private ObservableList<Vuelo> data = FXCollections.observableArrayList();
 
@@ -66,6 +70,9 @@ public class VuelosController {
         comboEstadoVuelo.setItems(FXCollections.observableArrayList(ESTADOS));
         cargarAerolineasCombo();
         cargarPuertasCombo();
+
+        // NUEVO: Inicializa combos de filtro
+        inicializarFiltros();
 
         colIdVuelo.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getIdVuelo())));
         colNumeroVuelo.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getNumeroVuelo()));
@@ -99,6 +106,21 @@ public class VuelosController {
         );
     }
 
+    // Inicialización de filtros por estado y aerolínea
+    private void inicializarFiltros() {
+        // Inserta estos ComboBox en tu FXML donde lo necesites, y asocia fx:id="comboFiltroEstadoVuelo" y fx:id="comboFiltroAerolinea"
+        if (comboFiltroEstadoVuelo != null) {
+            comboFiltroEstadoVuelo.setItems(FXCollections.observableArrayList(ESTADOS));
+            comboFiltroEstadoVuelo.setOnAction(e -> filtrarTabla());
+        }
+        if (comboFiltroAerolinea != null) {
+            // Llenar con las aerolíneas disponibles
+            List<String> aerolineas = new ArrayList<>(nombreAerolineaToId.keySet());
+            comboFiltroAerolinea.setItems(FXCollections.observableArrayList(aerolineas));
+            comboFiltroAerolinea.setOnAction(e -> filtrarTabla());
+        }
+    }
+
     private void cargarAerolineasCombo() {
         comboAerolinea.getItems().clear();
         nombreAerolineaToId.clear();
@@ -111,6 +133,10 @@ public class VuelosController {
                 nombreAerolineaToId.put(nombre, id);
                 idToNombreAerolinea.put(id, nombre);
                 comboAerolinea.getItems().add(nombre);
+            }
+            // Actualiza filtro si existe
+            if (comboFiltroAerolinea != null) {
+                comboFiltroAerolinea.setItems(FXCollections.observableArrayList(nombreAerolineaToId.keySet()));
             }
         } catch (SQLException e) {
             mostrarAlerta("Error", "No se pudieron cargar las aerolíneas:\n" + e.getMessage(), Alert.AlertType.ERROR);
@@ -167,8 +193,35 @@ public class VuelosController {
                 data.add(vuelo);
             }
             tableVuelos.setItems(data);
+
+            // Aplica filtro si hay selección
+            filtrarTabla();
         } catch (SQLException e) {
             mostrarAlerta("Error", "No se pudieron cargar los vuelos:\n" + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    // Filtro por Estado y/o Aerolínea
+    private void filtrarTabla() {
+        String estadoFiltro = comboFiltroEstadoVuelo != null ? comboFiltroEstadoVuelo.getValue() : null;
+        String aerolineaFiltro = comboFiltroAerolinea != null ? comboFiltroAerolinea.getValue() : null;
+        ObservableList<Vuelo> filtrados = FXCollections.observableArrayList();
+
+        for (Vuelo vuelo : data) {
+            boolean coincide = true;
+            if (estadoFiltro != null && !estadoFiltro.isEmpty()) {
+                coincide = coincide && estadoFiltro.equals(vuelo.getEstadoVuelo());
+            }
+            if (aerolineaFiltro != null && !aerolineaFiltro.isEmpty()) {
+                coincide = coincide && aerolineaFiltro.equals(idToNombreAerolinea.get(vuelo.getIdAerolinea()));
+            }
+            if (coincide) filtrados.add(vuelo);
+        }
+
+        if ((estadoFiltro == null || estadoFiltro.isEmpty()) && (aerolineaFiltro == null || aerolineaFiltro.isEmpty())) {
+            tableVuelos.setItems(data); // Sin filtro
+        } else {
+            tableVuelos.setItems(filtrados);
         }
     }
 
@@ -234,6 +287,9 @@ public class VuelosController {
         txtBuscar.clear();
         limpiarCampos();
         tableVuelos.getSelectionModel().clearSelection();
+        // NUEVO: limpiar filtros
+        if (comboFiltroEstadoVuelo != null) comboFiltroEstadoVuelo.getSelectionModel().clearSelection();
+        if (comboFiltroAerolinea != null) comboFiltroAerolinea.getSelectionModel().clearSelection();
         cargarTabla();
         vueloSeleccionado = null;
     }
